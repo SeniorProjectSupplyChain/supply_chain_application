@@ -1,0 +1,62 @@
+/user/create:
+  post:
+    summary: Create User
+    description: Create User
+    tags:
+      - User
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userObj:
+                type: object
+                required: true
+            example:
+              userObj:
+                {
+                  email: "Eden@gmail.com",
+                  password: "Eden",
+                  phoneNumber: "+84909090909",
+                  userName: "Eden",
+                  address: "Da Nang",
+                  userType: "supplier",
+                  role: "supplier",
+                  status: "active",
+                  identify: "212de232-35a5-415b-9991-6128398b658c"
+                }
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+
+/user/all:
+  get:
+    summary: Get All Users
+    description: Get All Users
+    tags:
+      - User
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+
+/user/detail:
+  get:
+    summary: Get User
+    description: Get User
+    parameters:
+      - in: query
+        name: userId
+        schema:
+          type: string
+    tags:
+      - User
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed

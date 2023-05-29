@@ -1,0 +1,18 @@
+# Coverage directory used by tools like istanbul
+coverage
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Compiled TypeScript files
+dist
+
+# Organizations config files
+configs
+
+# Environment variables
+.env
+
+# Firebase config file
+src/config/supply-chain-9ea64-firebase-adminsdk-hz2j8-94d0fecb0a.json
