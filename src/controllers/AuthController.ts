@@ -1,9 +1,8 @@
-import AuthService from "../services/crudDatabase/auth";
+import AuthService from "../services/authService";
 import { Request, Response } from "express";
+import { Auth } from "../types/models";
 import { UserModel } from "../models/UserModel";
 import { AuthModel } from "../models/AuthModel";
-import { log } from "console";
-import { Auth } from "../types/models";
 
 const authService: AuthService = new AuthService();
 
@@ -28,10 +27,8 @@ export default class AuthController {
 				});
 			}
 			if (user.status === "inactive") {
-
 				let otp = await AuthModel.findOne({ phoneNumber: user.phoneNumber });
 				if (!otp) {
-					log("DEBUG");
 					let otp: Auth = {
 						phoneNumber: phoneNumber,
 						otp: await authService.sendOtp(phoneNumber),
@@ -63,18 +60,19 @@ export default class AuthController {
 						status: "notfound"
 					});
 				}
+
+				// if (otp.expired < new Date()) {
+				// 	otp.otp = await authService.sendOtp(phoneNumber);
+				// 	return res.json({
+				// 		message: "OTP sent successfully.",
+				// 		status: "verifying"
+				// 	});
+				// }
+
 				return res.json({
 					message: "OTP sent successfully.",
 					status: "verifying"
 				});
-
-				if (otp.expired < new Date()) {
-					otp.otp = await authService.sendOtp(phoneNumber);
-					return res.json({
-						message: "OTP sent successfully.",
-						status: "verifying"
-					});
-				}
 			}
 
 			return res.json({
@@ -82,7 +80,6 @@ export default class AuthController {
 				message: "Login successful",
 				status: "login"
 			});
-
 		} catch (err) {
 			console.log("ERR", err);
 			return res.json({

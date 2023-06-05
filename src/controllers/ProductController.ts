@@ -1,23 +1,19 @@
-import { evaluateTransaction, submitTransaction } from "../app";
-import { convertBufferToJavasciptObject } from "../helpers";
+import ImageService from "../services/imageService";
 import { Request, Response } from "express";
-import { getUserByUserId } from "../services/crudDatabase/user";
-import { getProductById } from "../services/crudDatabase/product";
-import { log } from "console";
-import ImageService from "../services/crudDatabase/image";
+import { PRODUCTION_URL } from "../constants";
+import { getUserByUserId } from "../services/userService";
+import { getProductById } from "../services/productService";
+import { convertBufferToJavasciptObject } from "../helpers";
+import { evaluateTransaction, submitTransaction } from "../app";
 
 const imageService: ImageService = new ImageService();
 
 const ProductController = {
 	getProduct: async (req: Request, res: Response) => {
 		try {
-			// const { userId, productId } = String(req.query);
-			const userId = String(req.query.userId);
-			const productId = String(req.query.productId);
-			console.log(userId, productId);
-
-			const userObj = await getUserByUserId(userId);
-			const product = await getProductById(productId, userObj);
+			const { userId, productId } = req.query;
+			const userObj = await getUserByUserId(String(userId));
+			const product = await getProductById(String(productId), userObj);
 
 			return res.json({
 				data: product,
@@ -25,11 +21,11 @@ const ProductController = {
 				error: null
 			});
 		} catch (error) {
-			console.log("getProduct", error);
+			console.log("getProduct", error.message);
 			return res.json({
 				data: null,
 				message: "failed",
-				error: error
+				error: error.message
 			});
 		}
 	},
@@ -38,7 +34,7 @@ const ProductController = {
 		try {
 			const userId = String(req.query.userId);
 			const userObj = await getUserByUserId(userId);
-			console.log("Debug",userId);
+
 			const productsBuffer = await evaluateTransaction(
 				"GetAllProducts",
 				userObj,
@@ -52,11 +48,11 @@ const ProductController = {
 				error: null
 			});
 		} catch (error) {
-			log("Err", error);
+			console.log("getAllProducts", error.message);
 			return res.json({
 				data: null,
 				message: "failed",
-				error: error + ""
+				error: error.message
 			});
 		}
 	},
@@ -65,20 +61,15 @@ const ProductController = {
 		try {
 			const userId = String(req.query.userId);
 			const productId = String(req.query.productId);
-
 			const userObj = await getUserByUserId(userId);
 			const productObj = await getProductById(productId, userObj);
-			console.log("userObj", userObj);
-			console.log("productObj", productObj);
 
 			const transactionsBuffer = await evaluateTransaction(
 				"GetHistory",
 				userObj,
 				productObj
 			);
-			console.log("transactionsBuffer", transactionsBuffer);
 			const transactions = convertBufferToJavasciptObject(transactionsBuffer);
-			console.log("transactions", transactions);
 
 			return res.json({
 				data: transactions,
@@ -86,10 +77,11 @@ const ProductController = {
 				error: null
 			});
 		} catch (error) {
+			console.log("getTransactionsHistory", error.message);
 			return res.json({
 				data: null,
 				message: "failed",
-				error: error
+				error: error.message
 			});
 		}
 	},
@@ -97,19 +89,17 @@ const ProductController = {
 	cultivateProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productObj } = req.body;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
-
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-			if (userObj.role.toLowerCase() != "supplier") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "supplier") {
+				return res.json({
+					message: "Denied permission! User must be a supplier!",
 					status: "unauthorize"
 				});
 			}
@@ -120,32 +110,17 @@ const ProductController = {
 				productObj
 			);
 
-			// const createdProduct = await createProduct(userObj.UserId, productObj);
-
-			// if (createdProduct.data) {
-			// 	return res.json({
-			// 		data: createdProduct.data,
-			// 		message: "successfully",
-			// 		error: null
-			// 	});
-			// } else {
-			// 	return res.json({
-			// 		data: null,
-			// 		message: "failed",
-			// 		error: createdProduct.data
-			// 	});
-			// }
-
 			return res.json({
 				data: data,
 				message: "successfully",
-				status: "success"
+				error: null
 			});
 		} catch (error) {
-			console.log("cultivateProduct", error);
+			console.log("cultivateProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
 			});
 		}
 	},
@@ -153,33 +128,31 @@ const ProductController = {
 	harvestProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productId } = req.body;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "supplier") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "supplier") {
+				return res.json({
+					message: "Denied permission! User must be a supplier!",
 					status: "unauthorize"
 				});
 			}
 
 			const productObj = await getProductById(productId, userObj);
 			if (!productObj) {
-				res.json({
+				return res.json({
 					message: "Product not found!",
 					status: "notfound"
 				});
 			}
 
-			if (productObj.status.toLowerCase() != "cultivated") {
-				res.json({
+			if (productObj.status.toLowerCase() != "cultivating") {
+				return res.json({
 					message: "Product is not cultivated or was harvested"
 				});
 			}
@@ -196,10 +169,11 @@ const ProductController = {
 				status: "success"
 			});
 		} catch (error) {
-			console.log("harvestProduct", error);
+			console.log("harvestProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
 			});
 		}
 	},
@@ -209,16 +183,16 @@ const ProductController = {
 			const userId = String(req.body.userId);
 			const productObj = req.body.productObj;
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "supplier") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "supplier") {
+				return res.json({
+					message: "Denied permission! User must be a supplier!",
 					status: "unauthorize"
 				});
 			}
@@ -231,10 +205,11 @@ const ProductController = {
 				error: null
 			});
 		} catch (error) {
+			console.log("updateProduct", error.message);
 			return res.json({
 				data: null,
 				message: "failed",
-				error: error
+				error: error.message
 			});
 		}
 	},
@@ -242,33 +217,30 @@ const ProductController = {
 	importProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productId, price } = req.body;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "manufacturer") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "manufacturer") {
+				return res.json({
+					message: "Denied permission! User must be a manufacturer!",
 					status: "unauthorize"
 				});
 			}
 
 			const productObj = await getProductById(productId, userObj);
 			if (!productObj) {
-				res.json({
+				return res.json({
 					message: "Product not found!",
 					status: "notfound"
 				});
 			}
-
 			if (productObj.status.toLowerCase() != "harvested") {
-				res.json({
+				return res.json({
 					message: "Product is not harvested or was imported"
 				});
 			}
@@ -286,10 +258,11 @@ const ProductController = {
 				status: "success"
 			});
 		} catch (error) {
-			console.log("importProduct", error);
+			console.log("importProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
 			});
 		}
 	},
@@ -297,49 +270,55 @@ const ProductController = {
 	manufactureProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productId, imageUrl } = req.body;
-			// const imageUrl = req.body.imageUrl;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
-					status: "notfound"
+					status: "user-notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "manufacturer") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "manufacturer") {
+				return res.json({
+					message: "Denied permission! User must be a manufacturer!",
 					status: "unauthorize"
 				});
 			}
 
 			const productObj = await getProductById(productId, userObj);
 			if (!productObj) {
-				res.json({
+				return res.json({
 					message: "Product not found!",
-					status: "notfound"
+					status: "product-notfound"
 				});
 			}
-
 			if (productObj.status.toLowerCase() != "imported") {
-				res.json({
-					message: "Product is not imported or was manufactured"
+				return res.json({
+					message: "Product is not imported or was manufactured",
+					status: "failed"
 				});
 			}
-			const imageArray = imageUrl;
-			let imageUrls = [];
 
-			for (let i of imageArray) {
-				const uploadedImageUrl =
-					(await imageService.upload(
-						i,
-						"image product/" + productObj.productName + "/" + Date.now()
-					)) + ".jpg";
-				imageUrls.push(uploadedImageUrl);
-			}
-			productObj.image = imageUrls;
+			// Upload image onto Firebase Storage
+			// const imageArray = imageUrl;
+			// let imageUrls = [];
+			// for (let i of imageArray) {
+			// 	const uploadedImageUrl =
+			// 		(await imageService.upload(
+			// 			i,
+			// 			"product_images/" + productObj.productName + "/" + Date.now()
+			// 		)) + ".jpg";
+			// 	imageUrls.push(uploadedImageUrl);
+			// }
+			// productObj.image = imageUrls;
+
+			// Generate QR code for product
+			const qrCodeString = await imageService.generateAndPublishQRCode(
+				`${PRODUCTION_URL}/product/detail?productId=${productId}&userId=${userId}`,
+				`qrcode/products/${productId}.img`
+			);
+			productObj.qrCode = qrCodeString;
+
 			const data = await submitTransaction(
 				"ManufactureProduct",
 				userObj,
@@ -352,10 +331,11 @@ const ProductController = {
 				status: "success"
 			});
 		} catch (error) {
-			console.log("manufacturer", error);
+			console.log("manufactureProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
 			});
 		}
 	},
@@ -363,33 +343,30 @@ const ProductController = {
 	exportProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productId, price } = req.body;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "manufacturer") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "manufacturer") {
+				return res.json({
+					message: "Denied permission! User must be a manufacturer!",
 					status: "unauthorize"
 				});
 			}
 
 			const productObj = await getProductById(productId, userObj);
 			if (!productObj) {
-				res.json({
+				return res.json({
 					message: "Product not found!",
 					status: "notfound"
 				});
 			}
-
 			if (productObj.status.toLowerCase() != "manufactured") {
-				res.json({
+				return res.json({
 					message: "Product is not manufactured or was exported"
 				});
 			}
@@ -407,10 +384,11 @@ const ProductController = {
 				status: "success"
 			});
 		} catch (error) {
-			console.log("export", error);
+			console.log("exportProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
 			});
 		}
 	},
@@ -418,33 +396,31 @@ const ProductController = {
 	distributeProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productId } = req.body;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
 			const userObj = await getUserByUserId(userId);
+
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "distributor") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "distributor") {
+				return res.json({
+					message: "Denied permission! User must be a distributor!",
 					status: "unauthorize"
 				});
 			}
 
 			const productObj = await getProductById(productId, userObj);
 			if (!productObj) {
-				res.json({
+				return res.json({
 					message: "Product not found!",
 					status: "notfound"
 				});
 			}
 
 			if (productObj.status.toLowerCase() != "exported") {
-				res.json({
+				return res.json({
 					message: "Product is not exported or was distributed"
 				});
 			}
@@ -461,48 +437,51 @@ const ProductController = {
 				status: "success"
 			});
 		} catch (error) {
-			console.log(" Distribute", error);
+			console.log("distributeProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
 			});
 		}
 	},
 
-	sellProduct: async (req: Request, res: Response) => {
+	importRetailerProduct: async (req: Request, res: Response) => {
 		try {
 			const { userId, productId, price } = req.body;
-			// const userId = String(req.body.userId);
-			// const productObj = req.body.productObj;
+
 			const userObj = await getUserByUserId(userId);
 			if (!userObj) {
-				res.json({
+				return res.json({
 					message: "User not found!",
 					status: "notfound"
 				});
 			}
-
-			if (userObj.role.toLowerCase() != "retailer") {
-				res.json({
-					message: "Denied permission!",
+			if (userObj.role != "retailer") {
+				return res.json({
+					message: "Denied permission! User must be a retailer!",
 					status: "unauthorize"
 				});
 			}
 
 			const productObj = await getProductById(productId, userObj);
 			if (!productObj) {
-				res.json({
+				return res.json({
 					message: "Product not found!",
 					status: "notfound"
 				});
 			}
-
-			if (productObj.status.toLowerCase() != "selling") {
-				res.json({
-					message: "Product is not distributed or was sold"
+			if (productObj.status.toLowerCase() != "distributed") {
+				return res.json({
+					message: "Product is not distributed or was selling"
 				});
 			}
-			const data = await submitTransaction("SellProduct", userObj, productObj);
+
+			const data = await submitTransaction(
+				"ImportRetailerProduct",
+				userObj,
+				productObj
+			);
 
 			return res.json({
 				data: data,
@@ -510,10 +489,58 @@ const ProductController = {
 				status: "success"
 			});
 		} catch (error) {
-			console.log("sellproduct", error);
+			console.log("importRetailProduct", error.message);
 			return res.json({
+				data: null,
 				message: "failed",
-				status: "failed"
+				error: error.message
+			});
+		}
+	},
+
+	sellProduct: async (req: Request, res: Response) => {
+		try {
+			const { userId, productId, price } = req.body;
+			const userObj = await getUserByUserId(userId);
+
+			if (!userObj) {
+				return res.json({
+					message: "User not found!",
+					status: "notfound"
+				});
+			}
+			if (userObj.role != "retailer") {
+				return res.json({
+					message: "Denied permission! User must be a retailer!",
+					status: "unauthorize"
+				});
+			}
+
+			const productObj = await getProductById(productId, userObj);
+			if (!productObj) {
+				return res.json({
+					message: "Product not found!",
+					status: "notfound"
+				});
+			}
+			if (productObj.status.toLowerCase() != "selling") {
+				return res.json({
+					message: "Product is not selling or was sold"
+				});
+			}
+
+			const data = await submitTransaction("SellProduct", userObj, productObj);
+			return res.json({
+				data: data,
+				message: "successfully",
+				status: "success"
+			});
+		} catch (error) {
+			console.log("sellProduct", error.message);
+			return res.json({
+				data: null,
+				message: "failed",
+				error: error.message
 			});
 		}
 	},
@@ -544,7 +571,7 @@ const ProductController = {
 		// 	return res.json({
 		// 		data: null,
 		// 		message: "failed",
-		// 		error: error
+		// 		error: error.message
 		// 	});
 		// }
 	}
