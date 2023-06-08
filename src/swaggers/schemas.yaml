@@ -1,0 +1,90 @@
+# Online Swagger formatter: https://editor.swagger.io/
+
+components:
+  schemas:
+    User:
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        userName:
+          type: string
+        address:
+          type: string
+        userType:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+
+    ProductDates:
+      properties:
+        cultivated:
+          type: string
+        harvested:
+          type: string
+        imported:
+          type: string
+        manufacturered:
+          type: string
+        exported:
+          type: string
+        distributed:
+          type: string
+        sold:
+          type: string
+
+    ProductActors:
+      properties:
+        supplierId:
+          type: string
+        manufacturerId:
+          type: string
+        distributorId:
+          type: string
+        retailerId:
+          type: string
+
+    Product:
+      properties:
+        productId:
+          type: string
+        productName:
+          type: string
+        dates:
+          type: object
+          $ref: "#components/schemas/ProductDates"
+        actors:
+          type: object
+          $ref: "#components/schemas/ProductActors"
+        price:
+          type: string
+        status:
+          type: string
+        description:
+          type: string
+        certificateUrl:
+          type: string
+        cooperationId:
+          type: string
+        image:
+          type: array
+
+    Cooperation:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        founderId:
+          type: string
+        longitude:
+          type: string
+        latitude:
+          type: string

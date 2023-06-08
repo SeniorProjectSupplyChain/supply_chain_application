@@ -1,0 +1,45 @@
+### get all product
+GET https://f20f59bc6393.ngrok.app/product/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiI1ZDEzMWE5OC00NjQ5LTRlODYtOGJjZS1kZTMyNTU0NGI1YWIiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIiwicGhvbmVOdW1iZXIiOiIrODQ4ODY3NTU3NzIiLCJpYXQiOjE2ODYwNDUyNDEsImV4cCI6MTY4NjEzMTY0MX0.SU-Ah3jgbg8tOSX299MNAkEy_XH8SKSw2GoL-G_Ll4g
+
+### cultivated
+POST https://f20f59bc6393.ngrok.app/product/cultivate
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiI1ZDEzMWE5OC00NjQ5LTRlODYtOGJjZS1kZTMyNTU0NGI1YWIiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIiwicGhvbmVOdW1iZXIiOiIrODQ4ODY3NTU3NzIiLCJpYXQiOjE2ODYwNDUyNDEsImV4cCI6MTY4NjEzMTY0MX0.SU-Ah3jgbg8tOSX299MNAkEy_XH8SKSw2GoL-G_Ll4g
+
+{
+  "productObj": {
+    "productId": "Product3",
+    "image": [
+      "https://ocopvietnam.com.vn/upload/images/dua-hau-ham-ninh-quang-binh-ngot-ngao-nhu-tam-long-nguoi-mien-trung-5-1652858679.jpg",
+      "https://ocopvietnam.com.vn/upload/images/duahauhamninh5.jpg",
+      "https://baoquangbinh.vn/dataimages/202305/original/images1539032652_1__17__copy.jpg"
+    ],
+    "productName": "Dưa hấu Hàm Ninh",
+    "dates": {
+      "cultivated": "",
+      "harvested": "",
+      "imported": "",
+      "manufacturered": "",
+      "exported": "",
+      "distributed": "",
+      "selling": "",
+      "sold": ""
+    },
+    "actors": {
+      "supplierId": "",
+      "manufacturerId": "",
+      "distributorId": "",
+      "retailerId": ""
+    },
+    "expireTime": "",
+    "price": "100000",
+    "amount": "10",
+    "unit": "kg",
+    "status": "",
+    "description": "Dưa hấu Hàm Ninh, Quảng Bình ngọt ngào như tấm lòng người miền Trung",
+    "certificateUrl": "https://baoquangbinh.vn/dataimages/202305/original/images1538078385_5_copy.jpg",
+    "supplierId": "4c5bf63e-4be2-4b40-9ceb-ebd87ff1c59a",
+    "qrCode": ""
+  }
+}
