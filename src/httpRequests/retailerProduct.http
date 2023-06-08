@@ -1,7 +1,0 @@
-### retailer product
-POST http://localhost:4000/retailer/all
-Content-Type: application/json
-
-{
-  "phoneNumber": "+84886755772"
-}
