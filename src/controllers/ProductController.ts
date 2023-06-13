@@ -2,18 +2,76 @@ import ImageService from "../services/imageService";
 import { Request, Response } from "express";
 import { DecodeUser } from "../types/common";
 import { PRODUCTION_URL } from "../constants";
+import { Product } from "../models/ProductModel";
+import { ProductForCultivate } from "../types/models";
 import { getUserObjByUserId } from "../services/userService";
-import { convertBufferToJavasciptObject } from "../helpers";
-import { evaluateTransaction, submitTransaction } from "../app";
+import { getProductById, getAllProducts } from "../services/productService";
 import {
-	getProductById,
-	getDetailProductById
-} from "../services/productService";
+	evaluateTransaction,
+	submitTransaction,
+	submitTransactionCultivateProduct
+} from "../app";
+import { convertBufferToJavasciptObject } from "../helpers";
+import moment from 'moment'
+import { parse, format, addHours } from 'date-fns';
+import { log } from "console";
 
 const imageService: ImageService = new ImageService();
 
 const ProductController = {
+	// getQuantityProduct: async (req: Request, res: Response) => {
+	// 	try {
+	// 		const user = req.user as DecodeUser;
+	// 		const userObj = await getUserObjByUserId(user.userId);
+	//
+	// 		const productsBuffer = await evaluateTransaction(
+	// 			"GetAllProducts",
+	// 			userObj,
+	// 			null
+	// 		);
+	// 		const products = await convertBufferToJavasciptObject(productsBuffer);
+	//
+	// 		return res.json({
+	// 			data: products,
+	// 			message: "successfully",
+	// 			error: null
+	// 		});
+	// 	} catch (error) {
+	// 		console.log("getAllProducts", error.message);
+	// 		return res.json({
+	// 			data: null,
+	// 			message: "failed",
+	// 			error: error.message
+	// 		});
+	// 	}
+	// },
+
 	getAllProducts: async (req: Request, res: Response) => {
+		try {
+			const user = req.user as DecodeUser;
+			const products = await getAllProducts(user.userId);
+			const sortedProducts = products.sort(
+				(a: Product, b: Product) =>
+					parseInt(a.productId.slice(7)) - parseInt(b.productId.slice(7))
+			);
+
+			return res.json({
+				data: sortedProducts,
+				message: "successfully",
+				error: null
+			});
+		
+		} catch (error) {
+			console.log("getAllProducts", error.message);
+			return res.json({
+				data: null,
+				message: "failed",
+				error: error.message
+			});
+		}
+	},
+
+	getPaginationProduct: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
 			const userObj = await getUserObjByUserId(user.userId);
@@ -25,8 +83,20 @@ const ProductController = {
 			);
 			const products = await convertBufferToJavasciptObject(productsBuffer);
 
+			console.log(products.length);
+
+			// Phân trang với mỗi trang hiển thị 5 sản phẩm
+			const page = parseInt(req.query.page as string) || 1; // Trang hiện tại (mặc định là trang 1)
+			const pageSize = 3; // Số lượng sản phẩm trên mỗi trang
+			const startIndex = (page - 1) * pageSize; // Vị trí bắt đầu của trang hiện tại
+			const endIndex = startIndex + pageSize; // Vị trí kết thúc của trang hiện tại
+			const paginatedProducts = products.slice(startIndex, endIndex);
+
 			return res.json({
-				data: products,
+				data: {
+					data: paginatedProducts,
+					length: products.length
+				},
 				message: "successfully",
 				error: null
 			});
@@ -45,7 +115,7 @@ const ProductController = {
 			const user = req.user as DecodeUser;
 			const productId = String(req.params.productId);
 			const userObj = await getUserObjByUserId(user.userId);
-			const product = await getDetailProductById(productId, userObj);
+			const product = await getProductById(userObj, productId);
 
 			return res.json({
 				data: product,
@@ -67,16 +137,14 @@ const ProductController = {
 			const user = req.user as DecodeUser;
 			const productId = String(req.query.productId);
 			const userObj = await getUserObjByUserId(user.userId);
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 
-			const transactionsBuffer = await evaluateTransaction(
+			const transactions = await evaluateTransaction(
 				"GetProductTransactionHistory",
 				userObj,
 				productObj
 			);
-			const transactions = await convertBufferToJavasciptObject(
-				transactionsBuffer
-			);
+
 			return res.json({
 				data: transactions,
 				message: "successfully",
@@ -96,21 +164,21 @@ const ProductController = {
 		try {
 			const user = req.user as DecodeUser;
 			const userObj = await getUserObjByUserId(user.userId);
-			const productObj = req.body.productObj;
+			const productObj = req.body.productObj as ProductForCultivate;
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const data = await submitTransaction(
+			const data = await submitTransactionCultivateProduct(
 				"CultivateProduct",
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
@@ -134,22 +202,26 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "notfound"
+					error: "product-notfound"
 				});
 			}
 
-			if (productObj.status.toLowerCase() != "cultivating") {
+			if (productObj.status.toLowerCase() != "cultivated") {
 				return res.json({
-					message: "Product is not cultivated or was harvested"
+					data: null,
+					message: "Product is not cultivated or was harvested",
+					error: "product-not-cultivated-or-was-harvested"
 				});
 			}
 
@@ -158,7 +230,6 @@ const ProductController = {
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
@@ -182,8 +253,9 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -192,7 +264,6 @@ const ProductController = {
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
@@ -216,21 +287,25 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "notfound"
+					error: "product-notfound"
 				});
 			}
 			if (productObj.status.toLowerCase() != "harvested") {
 				return res.json({
-					message: "Product is not harvested or was imported"
+					data: null,
+					message: "Product is not harvested or was imported",
+					error: "product-is-not-harvested-or-was-imported"
 				});
 			}
 
@@ -240,11 +315,10 @@ const ProductController = {
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
-				status: "success"
+				error: null
 			});
 		} catch (error) {
 			console.log("importProduct", error.message);
@@ -264,53 +338,41 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "user-notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "product-notfound"
+					error: "product-notfound"
 				});
 			}
 			if (productObj.status.toLowerCase() != "imported") {
 				return res.json({
+					data: null,
 					message: "Product is not imported or was manufactured",
-					status: "failed"
+					error: "product-is-not-imported-or-was-manufactured"
 				});
 			}
 
-			// Upload image onto Firebase Storage
-			// const imageArray = imageUrl;
-			// let imageUrls = [];
-			// for (let i of imageArray) {
-			// 	const uploadedImageUrl =
-			// 		(await imageService.upload(
-			// 			i,
-			// 			"product_images/" + productObj.productName + "/" + Date.now()
-			// 		)) + ".jpg";
-			// 	imageUrls.push(uploadedImageUrl);
-			// }
-			// productObj.image = imageUrls;
-			productObj.image = imageUrl;
-			productObj.expireTime = expireTime;
-
-			// Generate QR code for product
 			const qrCodeString = await imageService.generateAndPublishQRCode(
 				`${PRODUCTION_URL}/product/${productId}`,
 				`qrcode/products/${productId}.jpg`
 			);
-			productObj.qrCode = qrCodeString;
+			productObj.qrCode = qrCodeString || "";
+			productObj.expireTime = expireTime;
+			productObj.image = imageUrl;
 
 			const data = await submitTransaction(
 				"ManufactureProduct",
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
@@ -334,21 +396,25 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "notfound"
+					error: "product-notfound"
 				});
 			}
 			if (productObj.status.toLowerCase() != "manufactured") {
 				return res.json({
-					message: "Product is not manufactured or was exported"
+					data: null,
+					message: "Product is not manufactured or was exported",
+					error: "product-is-not-manufactured-or-was-exported"
 				});
 			}
 
@@ -358,11 +424,10 @@ const ProductController = {
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
-				status: "success"
+				error: null
 			});
 		} catch (error) {
 			console.log("exportProduct", error.message);
@@ -382,22 +447,26 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "notfound"
+					error: "product-notfound"
 				});
 			}
 
 			if (productObj.status.toLowerCase() != "exported") {
 				return res.json({
-					message: "Product is not exported or was distributed"
+					data: null,
+					message: "Product is not exported or was distributed",
+					error: "product-is-not-exported-or-was-distributed"
 				});
 			}
 
@@ -406,11 +475,10 @@ const ProductController = {
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
-				status: "success"
+				error: null
 			});
 		} catch (error) {
 			console.log("distributeProduct", error.message);
@@ -430,21 +498,25 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "notfound"
+					error: "product-notfound"
 				});
 			}
-			if (productObj.status.toLowerCase() != "distributed") {
+			if (productObj.status.toLowerCase() != "distributing") {
 				return res.json({
-					message: "Product is not distributed or was selling"
+					data: null,
+					message: "Product is not distributed or was selling",
+					error: "product-is-not-distributed-or-was-selling"
 				});
 			}
 
@@ -454,11 +526,10 @@ const ProductController = {
 				userObj,
 				productObj
 			);
-
 			return res.json({
 				data: data,
 				message: "successfully",
-				status: "success"
+				error: null
 			});
 		} catch (error) {
 			console.log("importRetailProduct", error.message);
@@ -478,31 +549,34 @@ const ProductController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(productId, userObj);
+			const productObj = await getProductById(userObj, productId);
 			if (!productObj) {
 				return res.json({
+					data: null,
 					message: "Product not found!",
-					status: "notfound"
+					error: "product-notfound"
 				});
 			}
-			if (productObj.status.toLowerCase() != "selling") {
+			if (productObj.status.toLowerCase() != "retailing") {
 				return res.json({
-					message: "Product is not selling or was sold"
+					data: null,
+					message: "Product is not selling or was sold",
+					error: "product-is-not-selling-or-was-sold"
 				});
 			}
 
 			productObj.price = price;
 			const data = await submitTransaction("SellProduct", userObj, productObj);
-
 			return res.json({
 				data: data,
 				message: "successfully",
-				status: "success"
+				error: null
 			});
 		} catch (error) {
 			console.log("sellProduct", error.message);

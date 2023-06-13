@@ -3,9 +3,13 @@ import ImageService from "../services/imageService";
 import { Request, Response } from "express";
 import { DecodeUser } from "../types/common";
 import { PRODUCTION_URL } from "../constants";
+import { submitTransactionOrderObj } from "../app";
 import { getUserObjByUserId } from "../services/userService";
-import { getNextCounterID } from "../services/productService";
-import { submitTransaction, submitTransactionOrderAddress } from "../app";
+import {
+	OrderForCreate,
+	OrderForUpdateFinish,
+	OrderPayloadForCreate
+} from "../types/models";
 
 const orderService: OrderService = new OrderService();
 const imageService: ImageService = new ImageService();
@@ -21,8 +25,9 @@ const OrderController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -51,8 +56,9 @@ const OrderController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -86,8 +92,9 @@ const OrderController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -96,7 +103,6 @@ const OrderController = {
 				user.userId,
 				statusValue
 			);
-
 			return res.json({
 				data: orders,
 				message: "successfully",
@@ -121,8 +127,9 @@ const OrderController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -131,7 +138,6 @@ const OrderController = {
 				user.userId,
 				statusValue
 			);
-
 			return res.json({
 				data: orders,
 				message: "successfully",
@@ -156,8 +162,9 @@ const OrderController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -166,7 +173,6 @@ const OrderController = {
 				user.userId,
 				statusValue
 			);
-
 			return res.json({
 				data: orders,
 				message: "successfully",
@@ -189,8 +195,9 @@ const OrderController = {
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
@@ -212,28 +219,36 @@ const OrderController = {
 	createOrder: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
+			const orderObj = req.body.orderObj as OrderPayloadForCreate;
 			const userObj = await getUserObjByUserId(user.userId);
-			const orderObj = req.body.orderObj;
-
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			// Generate QR code for order
-			const orderId = "Order1";
-			// await getNextCounterID(userId, "OrderCounterNO"))
+			const order: OrderForCreate =
+				await orderService.handleOrderPayloadForCreateToOrderForCreate(
+					userObj,
+					orderObj
+				);
+
+			// QR Code for order
+			const orderId = await orderService.getNextCounterID(
+				userObj,
+				"OrderCounterNO"
+			);
 			const qrCodeString = await imageService.generateAndPublishQRCode(
 				`${PRODUCTION_URL}/order/${orderId}`,
 				`qrcode/orders/${orderId}.jpg`
 			);
-			orderObj.qrCode = qrCodeString;
+			order.qrCode = qrCodeString || "";
 
-			const order = await orderService.createOrder(userObj, orderObj);
+			const createdOrder = await orderService.createOrder(userObj, order);
 			return res.json({
-				data: order,
+				data: createdOrder,
 				message: "successfully",
 				error: null
 			});
@@ -250,23 +265,21 @@ const OrderController = {
 		try {
 			const user = req.user as DecodeUser;
 			const userObj = await getUserObjByUserId(user.userId);
-			const { orderObj, longitude, latitude } = req.body;
+			const orderObj = req.body.orderObj as OrderForUpdateFinish;
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const order = await submitTransactionOrderAddress(
+			const order = await submitTransactionOrderObj(
 				"UpdateOrder",
 				userObj,
-				orderObj,
-				longitude,
-				latitude
+				orderObj
 			);
-
 			return res.json({
 				data: order,
 				message: "successfully",
@@ -285,24 +298,21 @@ const OrderController = {
 		try {
 			const user = req.user as DecodeUser;
 			const userObj = await getUserObjByUserId(user.userId);
-			const { orderId, longitude, latitude } = req.body;
+			const orderObj = req.body.orderObj as OrderForUpdateFinish;
 
 			if (!userObj) {
 				return res.json({
+					data: null,
 					message: "User not found!",
-					status: "notfound"
+					error: "user-notfound"
 				});
 			}
 
-			const orderObj = await orderService.getOrder(userObj, orderId);
-			const order = await submitTransactionOrderAddress(
+			const order = await submitTransactionOrderObj(
 				"FinishOrder",
 				userObj,
-				orderObj,
-				longitude,
-				latitude
+				orderObj
 			);
-
 			return res.json({
 				data: order,
 				message: "successfully",

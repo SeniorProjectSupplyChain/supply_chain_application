@@ -32,6 +32,7 @@
 		"bcryptjs": "^2.4.3",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
+		"date-fns": "^2.30.0",
 		"dotenv": "^16.0.3",
 		"env": "^0.0.2",
 		"express": "^4.18.2",
@@ -41,20 +42,24 @@
 		"firebase-admin": "^11.8.0",
 		"jsonwebtoken": "^9.0.0",
 		"lodash": "^4.17.21",
+		"moment": "^2.29.4",
 		"mongoose": "^7.1.1",
 		"morgan": "^1.10.0",
 		"passport": "^0.6.0",
 		"passport-jwt": "^4.0.1",
 		"qrcode": "^1.5.3",
+		"remove-diacritics": "^0.1.1",
 		"swagger-jsdoc": "^6.2.8",
 		"swagger-ui-express": "^4.6.3",
 		"ts-node": "^10.9.1",
 		"twilio": "^4.11.1",
+		"username": "^6.0.0",
 		"uuid": "^9.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^14.17.32",
 		"@types/qrcode": "^1.5.0",
+		"@types/username": "^5.0.0",
 		"typescript": "~4.9.4"
 	}
 }

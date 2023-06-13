@@ -1,5 +1,5 @@
-import { UserForRegister } from "../types/models";
 import { UserModel } from "../models/UserModel";
+import { UserForRegister } from "../types/models";
 
 export const getAllUsers = async () => {
 	return await UserModel.find({}).lean();
@@ -47,7 +47,13 @@ export const createNewUser = async (user: UserForRegister) => {
 			throw new Error("phone-number-existed");
 		}
 
-		return await UserModel.create(user)
+		const userPayload = {
+			...user,
+			userName: user.fullName,
+			status: "inactive"
+		};
+
+		return await UserModel.create(userPayload)
 			.then((data) => {
 				return {
 					data: data,

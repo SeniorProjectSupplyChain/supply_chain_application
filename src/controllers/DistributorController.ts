@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { getUserObjByUserId } from "../services/userService";
-import { convertBufferToJavasciptObject } from "../helpers";
-import { evaluateTransactionUserObjAnyParam, submitTransaction } from "../app";
 import { DecodeUser } from "../types/common";
+import { getUserObjByUserId } from "../services/userService";
+import { evaluateTransactionUserObjAnyParam, submitTransaction } from "../app";
 
 const DistributorController = {
 	getAllProducts: async (req: Request, res: Response) => {
@@ -16,12 +15,11 @@ const DistributorController = {
 				shippingStatus: shippingStatus
 			};
 
-			const productsBuffer = await evaluateTransactionUserObjAnyParam(
+			const products = await evaluateTransactionUserObjAnyParam(
 				"GetAllProductsByShippingStatus",
 				userObj,
 				queryObj
 			);
-			const products = await convertBufferToJavasciptObject(productsBuffer);
 
 			return res.json({
 				data: products,
@@ -50,10 +48,10 @@ const DistributorController = {
 				});
 			}
 
-			await submitTransaction("UpdateProduct", userObj, productObj);
+			const data = await submitTransaction("UpdateProduct", userObj, productObj);
 
 			return res.json({
-				data: null,
+				data: data,
 				message: "successfully",
 				error: null
 			});

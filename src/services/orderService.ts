@@ -1,17 +1,47 @@
-import { User } from "../types/models";
-import { contract, submitTransaction } from "../app";
+import ImageService from "./imageService";
+import { CounterName } from "../types/types";
+import { PRODUCTION_URL } from "../constants";
 import { convertBufferToJavasciptObject } from "../helpers";
-import { getUserByUserId } from "./userService";
+import { OrderForCreate, OrderPayloadForCreate, User } from "../types/models";
+import {
+	contract,
+	submitTransaction,
+	evaluateTransactionGetNextCounter,
+	submitTransactionCreateOrder
+} from "../app";
+
+const imageService: ImageService = new ImageService();
 
 export default class OrderService {
+	async getNextCounter(userObj: User, counterName: CounterName) {
+		const currentCounter = await evaluateTransactionGetNextCounter(
+			"GetCounterOfType",
+			userObj,
+			counterName
+		);
+		const nextCounter = currentCounter + 1;
+		return nextCounter;
+	}
+
+	async getNextCounterID(userObj: User, counterName: CounterName) {
+		const currentCounter = await evaluateTransactionGetNextCounter(
+			"GetCounterOfType",
+			userObj,
+			counterName
+		);
+		return counterName == "ProductCounterNO"
+			? `Product${currentCounter + 1}`
+			: `Order${currentCounter + 1}`;
+	}
+
 	async getAllOrders(userObj: User, status: string) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const orders = await contractOrder.evaluateTransaction(
 				"GetAllOrders",
 				status
 			);
-			return await convertBufferToJavasciptObject(orderBuffer);
+			return convertBufferToJavasciptObject(orders);
 		} catch (error) {
 			console.log(error.message);
 			return error.message;
@@ -26,13 +56,13 @@ export default class OrderService {
 	) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const order = await contractOrder.evaluateTransaction(
 				"GetAllOrdersByAddress",
 				longitude,
 				latitude,
 				shippingStatus
 			);
-			return await convertBufferToJavasciptObject(orderBuffer);
+			return convertBufferToJavasciptObject(order);
 		} catch (error) {
 			return error.message;
 		}
@@ -45,12 +75,12 @@ export default class OrderService {
 	) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const orders = await contractOrder.evaluateTransaction(
 				"GetAllOrdersOfManufacturer",
 				userId,
 				status
 			);
-			return convertBufferToJavasciptObject(orderBuffer);
+			return convertBufferToJavasciptObject(orders);
 		} catch (error) {
 			return error.message;
 		}
@@ -63,12 +93,12 @@ export default class OrderService {
 	) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const orders = await contractOrder.evaluateTransaction(
 				"GetAllOrdersOfDistributor",
 				userId,
 				status
 			);
-			return convertBufferToJavasciptObject(orderBuffer);
+			return convertBufferToJavasciptObject(orders);
 		} catch (error) {
 			return error.message;
 		}
@@ -77,12 +107,12 @@ export default class OrderService {
 	async GetAllOrdersOfRetailer(userObj: User, userId: string, status: string) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const orders = await contractOrder.evaluateTransaction(
 				"GetAllOrdersOfRetailer",
 				userId,
 				status
 			);
-			return convertBufferToJavasciptObject(orderBuffer);
+			return convertBufferToJavasciptObject(orders);
 		} catch (error) {
 			return error.message;
 		}
@@ -91,11 +121,11 @@ export default class OrderService {
 	async getOrder(userObj: User, orderId: string) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const order = await contractOrder.evaluateTransaction(
 				"GetOrder",
 				String(orderId)
 			);
-			return await convertBufferToJavasciptObject(orderBuffer);
+			return convertBufferToJavasciptObject(order);
 		} catch (error) {
 			return error.message;
 		}
@@ -104,94 +134,29 @@ export default class OrderService {
 	async getDetailOrder(userObj: User, orderId: string) {
 		try {
 			const contractOrder = await contract(userObj);
-			const orderBuffer = await contractOrder.evaluateTransaction(
+			const order = await contractOrder.evaluateTransaction(
 				"GetOrder",
 				orderId
 			);
-			const order = await convertBufferToJavasciptObject(orderBuffer);
-
-			// override deliveryStatus
-			const { distributorId, retailerId } = order;
-			const [distributor, retailer] = await Promise.all([
-				getUserByUserId(distributorId),
-				getUserByUserId(retailerId)
-			]);
-
-			if (order.deliveryStatus[0]) order.deliveryStatus[0].actor = retailer;
-			if (order.deliveryStatus[1]) order.deliveryStatus[1].actor = distributor;
-			if (order.deliveryStatus[2]) order.deliveryStatus[2].actor = distributor;
-
-			// override products
-			order.productItemList.map(async (product: any) => {
-				const { supplierId, manufacturerId, distributorId, retailerId } =
-					product.actors;
-				const [supplier, manufacturer, distributor, retailer] =
-					await Promise.all([
-						getUserByUserId(supplierId),
-						getUserByUserId(manufacturerId),
-						getUserByUserId(distributorId),
-						getUserByUserId(retailerId)
-					]);
-
-				product.dates = [
-					{
-						status: "cultivated",
-						time: product.dates.cultivated,
-						actor: supplier
-					},
-					{
-						status: "harvested",
-						time: product.dates.harvested,
-						actor: supplier
-					},
-					{
-						status: "imported",
-						time: product.dates.imported,
-						actor: manufacturer
-					},
-					{
-						status: "manufacturered",
-						time: product.dates.manufacturered,
-						actor: manufacturer
-					},
-					{
-						status: "exported",
-						time: product.dates.exported,
-						actor: manufacturer
-					},
-					{
-						status: "distributed",
-						time: product.dates.distributed,
-						actor: distributor
-					},
-					{
-						status: "selling",
-						time: product.dates.selling,
-						actor: retailer
-					},
-					{
-						status: "sold",
-						time: product.dates.sold,
-						actor: retailer
-					}
-				];
-			});
-
-			return order;
+			return convertBufferToJavasciptObject(order);
 		} catch (error) {
 			return error.message;
 		}
 	}
 
-	async createOrder(userObj: any, orderObj: any) {
+	async createOrder(userObj: User, orderObj: OrderForCreate) {
 		try {
-			return await submitTransaction("CreateOrder", userObj, orderObj);
+			return await submitTransactionCreateOrder(
+				"CreateOrder",
+				userObj,
+				orderObj
+			);
 		} catch (error) {
 			return error.message;
 		}
 	}
 
-	async updateOrder(userObj: any, orderObj: any) {
+	async updateOrder(userObj: User, orderObj: any) {
 		try {
 			return await submitTransaction("UpdateOrder", userObj, orderObj);
 		} catch (error) {
@@ -199,7 +164,7 @@ export default class OrderService {
 		}
 	}
 
-	async finishOrder(userObj: any, orderObj: any) {
+	async finishOrder(userObj: User, orderObj: any) {
 		try {
 			return await submitTransaction("FinishOrder", userObj, orderObj);
 		} catch (error) {
@@ -207,15 +172,47 @@ export default class OrderService {
 		}
 	}
 
-	async getHistoryOrder(userObj: any, orderId: any) {
+	async getHistoryOrder(userObj: User, orderId: string) {
 		try {
 			const contractOrder = await contract(userObj);
-			return await contractOrder.evaluateTransaction(
+			const data = await contractOrder.evaluateTransaction(
 				"GetHistoryOrder",
 				orderId
 			);
+			return convertBufferToJavasciptObject(data);
 		} catch (error) {
 			return error.message;
 		}
+	}
+
+	async handleOrderPayloadForCreateToOrderForCreate(
+		userObj: User,
+		orderObj: OrderPayloadForCreate
+	) {
+		const productCommercialCounter = await this.getNextCounter(
+			userObj,
+			"ProductCommercialCounterNO"
+		);
+
+		const order: OrderForCreate = {
+			productIdQRCodeItems: await Promise.all(
+				orderObj.productIdItems.map(async (productIdItem, index) => {
+					// QR Code for each product commercial
+					const productCommercialId = `ProductCommercial${
+						productCommercialCounter + index
+					}`;
+					const qrCodeString = await imageService.generateAndPublishQRCode(
+						`${PRODUCTION_URL}/product-commercial/${productCommercialId}`,
+						`qrcode/product-commercials/${productCommercialId}.jpg`
+					);
+					return { ...productIdItem, qrCode: qrCodeString || "" };
+				})
+			),
+			deliveryStatus: orderObj.deliveryStatus,
+			signatures: orderObj.signatures,
+			qrCode: orderObj.qrCode
+		};
+
+		return order;
 	}
 }

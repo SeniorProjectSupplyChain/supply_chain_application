@@ -1,31 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 import mongoose, { Schema, Document } from "mongoose";
+import { Actor, ProductDate } from "../types/models";
 import { ProductStatus, ProductStatusArray } from "../types/types";
-
-interface ProductDates {
-	cultivated: string;
-	harvested: string;
-	imported: string;
-	manufacturered: string;
-	exported: string;
-	distributed: string;
-	selling: string;
-	sold: string;
-}
-
-interface ProductActors {
-	supplierId: string;
-	manufacturerId: string;
-	distributorId: string;
-	retailerId: string;
-}
 
 interface Product extends Document {
 	productId: string;
 	productName: string;
 	image: string[];
-	dates: ProductDates;
-	actors: ProductActors;
+	dates: ProductDate[];
 	expireTime: string;
 	price: string;
 	amount: string;
@@ -33,7 +15,7 @@ interface Product extends Document {
 	status: ProductStatus;
 	description: string;
 	certificateUrl: string;
-	supplierId: string;
+	supplier: Actor;
 	qrCode: string;
 }
 
@@ -42,19 +24,8 @@ const ProductSchema: Schema<Product> = new Schema<Product>({
 	productName: { type: String, required: true },
 	image: { type: [String], required: true },
 	dates: {
-		cultivated: { type: String },
-		harvested: { type: String },
-		imported: { type: String },
-		manufacturered: { type: String },
-		exported: { type: String },
-		distributed: { type: String },
-		sold: { type: String }
-	},
-	actors: {
-		supplierId: { type: String },
-		manufacturerId: { type: String },
-		distributorId: { type: String },
-		retailerId: { type: String }
+		type: [Object],
+		required: true
 	},
 	expireTime: { type: String },
 	price: { type: String, required: true, default: "0" },
@@ -64,11 +35,11 @@ const ProductSchema: Schema<Product> = new Schema<Product>({
 		type: String,
 		enum: ProductStatusArray,
 		required: true,
-		default: "CULTIVATING"
+		default: "CULTIVATED"
 	},
 	description: { type: String, required: true },
 	certificateUrl: { type: String, required: true },
-	supplierId: { type: String, required: true },
+	supplier: { type: Object, required: true },
 	qrCode: { type: String, required: true }
 });
 

@@ -13,22 +13,22 @@ export const UserRoleArray = [
 ];
 
 export type ProductStatus =
-	| "CULTIVATING"
+	| "CULTIVATED"
 	| "HARVESTED"
 	| "IMPORTED"
 	| "MANUFACTURED"
 	| "EXPORTED"
-	| "DISTRIBUTED"
-	| "SELLING"
+	| "DISTRIBUTING"
+	| "RETAILING"
 	| "SOLD";
 export const ProductStatusArray = [
-	"CULTIVATING",
+	"CULTIVATED",
 	"HARVESTED",
 	"IMPORTED",
 	"MANUFACTURED",
 	"EXPORTED",
-	"DISTRIBUTED",
-	"SELLING",
+	"DISTRIBUTING",
+	"RETAILING",
 	"SOLD"
 ];
 
@@ -37,3 +37,8 @@ export const UserStatusArray = ["active", "inactive"];
 
 export type OrderStatus = "PENDING" | "SHIPPING" | "SHIPPED";
 export const OrderStatusArray = ["PENDING", "SHIPPING", "SHIPPED"];
+
+export type CounterName =
+	| "ProductCounterNO"
+	| "ProductCommercialCounterNO"
+	| "OrderCounterNO";

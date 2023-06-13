@@ -3,13 +3,11 @@ import { UserRole, UserStatus, ProductStatus, OrderStatus } from "./types";
 export interface UserForRegister {
 	email: string;
 	password: string;
-	userName: string;
 	fullName: string;
 	avatar: string;
 	phoneNumber: string;
 	address: string;
 	role: UserRole;
-	status?: UserStatus;
 	signature: string;
 }
 
@@ -27,30 +25,17 @@ export interface User {
 	signature: string;
 }
 
-export type ProductDates = {
-	cultivated: string;
-	harvested: string;
-	imported: string;
-	manufacturered: string;
-	exported: string;
-	distributed: string;
-	selling: string;
-	sold: string;
-};
-
-export type ProductActors = {
-	supplierId: string;
-	manufacturerId: string;
-	distributorId: string;
-	retailerId: string;
+export type ProductDate = {
+	status: ProductStatus;
+	time: string;
+	actor: Actor;
 };
 
 export type Product = {
 	productId: string;
 	productName: string;
 	image: string[];
-	dates: ProductDates;
-	actors: ProductActors;
+	dates: ProductDate[];
 	expireTime: string;
 	price: string;
 	amount: string;
@@ -58,8 +43,18 @@ export type Product = {
 	status: ProductStatus;
 	description: string;
 	certificateUrl: string;
-	supplierId: string;
+	supplier: Actor;
 	qrCode: string;
+};
+
+export type ProductForCultivate = {
+	productName: string;
+	image: string[];
+	price: string;
+	amount: string;
+	unit: string;
+	description: string;
+	certificateUrl: string;
 };
 
 export type ProductHistory = {
@@ -75,36 +70,99 @@ export type Auth = {
 	expired: Date;
 };
 
-export type Signature = {
-	distributorSignature: string;
-	retailerSignature: string;
-};
-
 export type ProductItem = {
 	product: Product;
 	quantity: string;
 };
 
+export type Actor = {
+	email: string;
+	userName: string;
+	fullName: string;
+	avatar: string;
+	phoneNumber: string;
+	address: string;
+	role: UserRole;
+	userId: string;
+};
+
 export type DeliveryStatus = {
-	distributedId: string;
 	deliveryDate: string;
 	status: OrderStatus;
-	longitude: string;
-	latitude: string;
+	address: string;
+	actor: Actor;
 };
 
 export type Order = {
 	orderId: string;
 	productItemList: ProductItem[];
-	signature: Signature;
 	deliveryStatus: DeliveryStatus[];
+	signature: string[];
 	status: OrderStatus;
-	location: string;
-	manufacturerId: string;
-	distributorId: string;
-	retailerId: string;
+	manufacturer: Actor;
+	distributor: Actor;
+	retailer: Actor;
 	qrCode: string;
 	createDate: string;
 	updateDate: string;
 	finishDate: string;
 };
+
+export type ProductIdItem = {
+	productId: string;
+	quantity: string;
+};
+
+export type ProductIdQRCodeItem = {
+	productId: string;
+	quantity: string;
+	qrCode: string;
+};
+
+export type OrderPayloadForCreate = {
+	productIdItems: ProductIdItem[];
+	signatures: string[];
+	deliveryStatus: {
+		address: string;
+	};
+	qrCode: string;
+};
+
+export type OrderForCreate = {
+	productIdQRCodeItems: ProductIdQRCodeItem[];
+	signatures: string[];
+	deliveryStatus: {
+		address: string;
+	};
+	qrCode: string;
+};
+
+export type OrderForUpdateFinish = {
+	orderId: string;
+	signature: string;
+	deliveryStatus: {
+		address: string;
+	};
+};
+
+export type CartForCreate = {
+	productIdItems: ProductIdItem[];
+};
+
+export type ManufacturedProduct = {
+	product: Product;
+	date: string;
+};
+
+export type ProductNumber = {
+	product: Product;
+	count: number;
+};
+
+export type ProductTime = {
+	product: Product;
+	date: string;
+};
+
+export type OrderedProductId = Record<string, ProductNumber>;
+export type OrderedProductTime = Record<string, ProductTime>;
