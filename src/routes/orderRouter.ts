@@ -7,6 +7,13 @@ import { Roles } from "../middlewares/authentication/roleGuard";
 const router = express.Router();
 
 router.get(
+	"/transaction-history/:orderId",
+	jwtGuard,
+	Roles(UserRole.MANUFACTURER, UserRole.DISTRIBUTOR, UserRole.RETAILER),
+	OrderController.getTransactionHistory
+);
+
+router.get(
 	"/all/by-address",
 	jwtGuard,
 	Roles(UserRole.MANUFACTURER, UserRole.DISTRIBUTOR, UserRole.RETAILER),
@@ -55,7 +62,7 @@ router.patch(
 	OrderController.updateOrder
 );
 
-router.post(
+router.patch(
 	"/finish",
 	jwtGuard,
 	Roles(UserRole.DISTRIBUTOR),

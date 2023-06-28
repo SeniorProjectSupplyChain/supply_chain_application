@@ -6,11 +6,11 @@ import { Roles } from "../middlewares/authentication/roleGuard";
 
 const router = express.Router();
 
-router.patch(
-	"/product/update",
+router.get(
+	"/products",
 	jwtGuard,
-	Roles(UserRole.RETAILER),
-	SupplierController.updateProduct
+	Roles(UserRole.SUPPLIER),
+	SupplierController.getProductsBySupplierId
 );
 
 export default router;

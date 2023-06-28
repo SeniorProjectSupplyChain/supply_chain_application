@@ -1,36 +1,42 @@
+import ProductService from "../services/productService";
 import { Request, Response } from "express";
 import { DecodeUser } from "../types/common";
-import { submitTransaction } from "../app";
-import { getUserObjByUserId } from "../services/userService";
+import { Product } from "../types/models";
+
+const productService: ProductService = new ProductService();
 
 const SupplierController = {
-	updateProduct: async (req: Request, res: Response) => {
+	getProductsBySupplierId: async (req: Request, res: Response) => {
 		try {
+			let isAdded = false;
 			const user = req.user as DecodeUser;
-			const productObj = req.body.productObj;
-			const userObj = await getUserObjByUserId(user.userId);
+			const products = await productService.getAllProducts(user.userId);
 
-			if (!userObj) {
-				return res.json({
-					data: null,
-					message: "User not found!",
-					error: "user-notfound"
-				});
+			let productList = [];
+			for (let product of products) {
+				if (product.supplier.userId == user.userId) {
+					if (
+						product.status.toLowerCase() == "cultivated" 
+					||
+						product.status.toLowerCase() == "harvested"
+					)
+						productList.push(product);
+				}
+				isAdded = true;
 			}
 
-			const data = await submitTransaction(
-				"SupplierUpdateProduct",
-				userObj,
-				productObj
+			const sortedProducts = productList.sort(
+				(a: Product, b: Product) =>
+					parseInt(a.productId.slice(7)) - parseInt(b.productId.slice(7))
 			);
-			return res.json({
-				data: data,
+
+			return res.status(200).json({
+				data: sortedProducts,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			console.log("updateProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message

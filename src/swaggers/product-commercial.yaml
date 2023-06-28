@@ -1,3 +1,22 @@
+/product-commercial/transaction-history/{productCommercialId}:
+  get:
+    summary: Get Product Commercial Transaction History
+    description: Get Product Commercial Transaction History
+    parameters:
+      - in: path
+        name: productCommercialId
+        schema:
+          type: string
+    tags:
+      - Product Commercial
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+      404:
+        description: Not Found
+
 /product-commercial/all:
   get:
     summary: Get All Products Commercial
@@ -9,14 +28,16 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
-/product-commercial/{productId}:
+/product-commercial/{productCommercialId}:
   get:
     summary: Get Detail Product Commercial
     description: Get Detail Product Commercial
     parameters:
       - in: path
-        name: productId
+        name: productCommercialId
         schema:
           type: string
     tags:
@@ -26,3 +47,117 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
+
+/product-commercial/export:
+  post:
+    summary: Export Product
+    description: Export Product
+    tags:
+      - Product Commercial
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              productId:
+                type: string
+                required: true
+              price:
+                type: string
+                required: true
+            example:
+              productId: "Product1"
+              price: "100000"
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+      404:
+        description: Not Found
+
+/product-commercial/distribute:
+  post:
+    summary: Distribute Product
+    description: Distribute Product
+    tags:
+      - Product Commercial
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              productId:
+                type: string
+                required: true
+            example:
+              productId: "Product1"
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+      404:
+        description: Not Found
+
+/product-commercial/retailer-import:
+  post:
+    summary: Retailer Import Product
+    description: Retailer Import Product
+    tags:
+      - Product Commercial
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              productId:
+                type: string
+                required: true
+              price:
+                type: string
+                required: true
+            example:
+              productId: "Product1"
+              price: "100000"
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+      404:
+        description: Not Found
+
+/product-commercial/sell:
+  post:
+    summary: Sell Product
+    description: Sell Product
+    tags:
+      - Product Commercial
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              productId:
+                type: string
+                required: true
+              price:
+                type: string
+                required: true
+            example:
+              productId: "Product1"
+              price: "100000"
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+      404:
+        description: Not Found

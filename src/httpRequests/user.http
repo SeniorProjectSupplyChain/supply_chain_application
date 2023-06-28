@@ -1,1 +1,102 @@
-https://f20f59bc6393.ngrok.app/user/all
+GET https://2356220b1567.ngrok.app/user/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoibWFudWZhY3R1cmVyIiwidXNlcklkIjoiNzg4OTkxNzQtOGRjZC00NzVhLTk0ODMtNjQ3ODY2ZThkODQ2IiwidXNlck5hbWUiOiJNYW51ZmFjdHVyZXIgT3JncyIsInBob25lTnVtYmVyIjoiKzg0ODg2NzU1NzczIiwiaWF0IjoxNjg2NDk4Mzg2LCJleHAiOjE2ODY1ODQ3ODZ9.i95L89KYfNONxs9RcmkbeKrwH33M0hoE6nmRMU0DICw
+
+
+###ng create user
+POST https://bf65e7c30fcf.ngrok.app/user/create
+Content-Type: application/json
+
+{
+  "userObj": {
+    "role": "consumer",
+    "fullName": "Consumer Orgs",
+    "password": "consumer",
+    "phoneNumber": "+84886755774",
+    "email": "Consumer@gmail.com",
+    "address": "Da Nang",
+    "avatar": "https://legodesk.com/wp-content/uploads/2021/10/purchasing-habits-abstract-concept_335657-2995.jpg",
+    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2FsignatureConsumer.png?alt=media&token=42f391cb-11df-4398-bda1-870d110d167a&_gl=1*17jcwx9*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4ODYxMC4wLjAuMA.."
+  }
+}
+
+###
+#{
+#  "userObj": {
+#    "role": "supplier",
+#    "fullName": "Supplier Orgs",
+#    "password": "suplier",
+#    "phoneNumber": "+84886755772",
+#    "email": "Supplier@gmail.com",
+#    "address": "Hue",
+#    "avatar": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRezjywllNJYGzGT_nqOrrsU_aW0JNm4GthHA&usqp=CAU",
+#    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2Fsignature-supplier.png?alt=media&token=36c189fb-057b-4ceb-8ce6-6c4951187ba2&_gl=1*1rrrmm2*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4NzUzMi4wLjAuMA.."
+#  }
+#}
+#
+#
+#{
+#  "userObj": {
+#    "role": "manufacturer",
+#    "fullName": "Manufacturer Orgs",
+#    "password": "manufacturer",
+#    "phoneNumber": "+84886755773",
+#    "email": "Manufacturer@gmail.com",
+#    "address": "Da Nang",
+#    "avatar": "https://easyimex.com/wp-content/uploads/2020/07/how-to-find-the-right-chinese-manufacturer-for-your-product.png",
+#    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2Fsignature-supplier.png?alt=media&token=36c189fb-057b-4ceb-8ce6-6c4951187ba2&_gl=1*1rrrmm2*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4NzUzMi4wLjAuMA.."
+#  }
+#}
+#
+#{
+#  "userObj": {
+#    "role": "distributor",
+#    "fullName": "Distributor Orgs",
+#    "password": "distributor",
+#    "phoneNumber": "+84886755771",
+#    "email": "Distributor@gmail.com",
+#    "address": "Da Nang",
+#    "avatar": "https://www.lentzmilling.com/wp-content/uploads/2017/05/Food-Distribution-Icon.png",
+#    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2FsignatureDistributor.png?alt=media&token=67aa5ceb-5587-4dd7-bdff-e604df8c7d78&_gl=1*o1o4hx*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4ODE3My4wLjAuMA.."
+#  }
+#}
+#
+#{
+#  "userObj": {
+#    "role": "retailer",
+#    "fullName": "Retailer Orgs No.1",
+#    "password": "retailer",
+#    "phoneNumber": "+84886755770",
+#    "email": "Retailer01@gmail.com",
+#    "address": "Tam Ki",
+#    "avatar": "https://www.differencebetween.info/sites/default/files/images/3/retailer1.jpg",
+#    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2FsignatureRetailerFir.png?alt=media&token=9381a306-a310-4d9b-b087-fd166371401c&_gl=1*21elt2*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4ODM4OC4wLjAuMA.."
+#  }
+#}
+#
+#
+#{
+#  "userObj": {
+#    "role": "retailer",
+#    "fullName": "Retailer Orgs No.2",
+#    "password": "retailer",
+#    "phoneNumber": "+84886755769",
+#    "email": "Retailer02@gmail.com",
+#    "address": "Hue",
+#    "avatar": "https://images.ctfassets.net/lzny33ho1g45/things-retailers-black-friday-p-img/a0c2a880ee00a401a2da733e20e39f4d/file.png?w=1520&fm=jpg&q=30&fit=thumb&h=760",
+#    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2Fsignature.png?alt=media&token=6eb88827-1ffb-4db6-9d93-f4ec37f7d2d1&_gl=1*1rcbrvk*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4ODUwNS4wLjAuMA.."
+#  }
+#}
+#
+#
+#{
+#  "userObj": {
+#    "role": "consumer",
+#    "fullName": "Consumer Orgs",
+#    "password": "consumer",
+#    "phoneNumber": "+84886755774",
+#    "email": "Consumer@gmail.com",
+#    "address": "Da Nang",
+#    "avatar": "https://legodesk.com/wp-content/uploads/2021/10/purchasing-habits-abstract-concept_335657-2995.jpg",
+#    "signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2FsignatureConsumer.png?alt=media&token=42f391cb-11df-4398-bda1-870d110d167a&_gl=1*17jcwx9*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4ODYxMC4wLjAuMA.."
+#  }
+#}

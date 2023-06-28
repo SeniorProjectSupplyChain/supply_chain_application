@@ -1,26 +1,29 @@
-import { registerUser } from "../app";
+import AppService from "../appService";
+import UserService from "../services/userService";
 import { Request, Response } from "express";
-import { getUserObjByUserId, getAllUsers } from "../services/userService";
+
+const appService: AppService = new AppService();
+const userService: UserService = new UserService();
 
 const UserController = {
 	createUser: async (req: Request, res: Response) => {
 		try {
 			const userObj = req.body.userObj;
-			const createdUser = await registerUser(userObj);
+			const createdUser = await appService.registerUser(userObj);
 
 			return createdUser.data !== null
-				? res.json({
+				? res.status(200).json({
 						data: createdUser.data,
 						message: "successfully",
 						error: null
 				  })
-				: res.json({
+				: res.status(400).json({
 						data: null,
 						message: "failed",
 						error: createdUser.error
 				  });
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -30,15 +33,15 @@ const UserController = {
 
 	getAllUsers: async (req: Request, res: Response) => {
 		try {
-			const users = await getAllUsers();
+			const users = await userService.getAllUsers();
 
-			return res.json({
+			return res.status(200).json({
 				data: users,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -49,15 +52,15 @@ const UserController = {
 	getUser: async (req: Request, res: Response) => {
 		try {
 			const userId = String(req.params.userId);
-			const users = await getUserObjByUserId(userId);
+			const users = await userService.getUserById(userId);
 
-			return res.json({
+			return res.status(200).json({
 				data: users,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message

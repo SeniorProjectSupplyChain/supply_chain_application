@@ -1,3 +1,22 @@
+/product/transaction-history/{productId}:
+  get:
+    summary: Get Product Transaction History
+    description: Get Product Transaction History
+    parameters:
+      - in: path
+        name: productId
+        schema:
+          type: string
+    tags:
+      - Product
+    responses:
+      200:
+        description: Successfully
+      400:
+        description: Failed
+      404:
+        description: Not Found
+
 /product/all:
   get:
     summary: Get All Products
@@ -9,6 +28,8 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
 /product/{productId}:
   get:
@@ -26,6 +47,8 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
 /product/transactions-history:
   get:
@@ -43,6 +66,8 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
 /product/cultivate:
   post:
@@ -79,6 +104,8 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
 /product/harvest:
   post:
@@ -102,6 +129,8 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
 /product/import:
   post:
@@ -129,6 +158,8 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found
 
 /product/manufacture:
   post:
@@ -164,110 +195,8 @@
         description: Successfully
       400:
         description: Failed
-
-/product/export:
-  post:
-    summary: Export Product
-    description: Export Product
-    tags:
-      - Product
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              productId:
-                type: string
-                required: true
-              price:
-                type: string
-                required: true
-            example:
-              productId: "Product1"
-              price: "100000"
-    responses:
-      200:
-        description: Successfully
-      400:
-        description: Failed
-
-/product/distribute:
-  post:
-    summary: Distribute Product
-    description: Distribute Product
-    tags:
-      - Product
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              productId:
-                type: string
-                required: true
-            example:
-              productId: "Product1"
-    responses:
-      200:
-        description: Successfully
-      400:
-        description: Failed
-
-/product/retailer-import:
-  post:
-    summary: Retailer Import Product
-    description: Retailer Import Product
-    tags:
-      - Product
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              productId:
-                type: string
-                required: true
-              price:
-                type: string
-                required: true
-            example:
-              productId: "Product1"
-              price: "100000"
-    responses:
-      200:
-        description: Successfully
-      400:
-        description: Failed
-
-/product/sell:
-  post:
-    summary: Sell Product
-    description: Sell Product
-    tags:
-      - Product
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              productId:
-                type: string
-                required: true
-              price:
-                type: string
-                required: true
-            example:
-              productId: "Product1"
-              price: "100000"
-    responses:
-      200:
-        description: Successfully
-      400:
-        description: Failed
+      404:
+        description: Not Found
 
 /product/update:
   patch:
@@ -287,6 +216,7 @@
             example:
               productObj:
                 {
+                  productId: "Product1",
                   productName: "Gạo tẻ",
                   price: "100000",
                   amount: "1",
@@ -304,3 +234,5 @@
         description: Successfully
       400:
         description: Failed
+      404:
+        description: Not Found

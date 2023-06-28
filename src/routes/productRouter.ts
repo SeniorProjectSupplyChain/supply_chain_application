@@ -7,6 +7,13 @@ import { Roles } from "../middlewares/authentication/roleGuard";
 const router = express.Router();
 
 router.get(
+	"/transaction-history/:productId",
+	jwtGuard,
+	Roles(UserRole.SUPPLIER, UserRole.MANUFACTURER),
+	ProductController.getTransactionHistory
+);
+
+router.get(
 	"/all",
 	jwtGuard,
 	Roles(
@@ -70,34 +77,6 @@ router.post(
 	ProductController.manufactureProduct
 );
 
-router.post(
-	"/export",
-	jwtGuard,
-	Roles(UserRole.MANUFACTURER),
-	ProductController.exportProduct
-);
-
-router.post(
-	"/distribute",
-	jwtGuard,
-	Roles(UserRole.DISTRIBUTOR),
-	ProductController.distributeProduct
-);
-
-router.post(
-	"/retailer-import",
-	jwtGuard,
-	Roles(UserRole.RETAILER),
-	ProductController.importRetailerProduct
-);
-
-router.post(
-	"/sell",
-	jwtGuard,
-	Roles(UserRole.RETAILER),
-	ProductController.sellProduct
-);
-
 router.patch(
 	"/update",
 	jwtGuard,
@@ -112,14 +91,14 @@ router.patch(
 
 router.get(
 	"/:productId",
-	jwtGuard,
-	Roles(
-		UserRole.SUPPLIER,
-		UserRole.MANUFACTURER,
-		UserRole.DISTRIBUTOR,
-		UserRole.RETAILER,
-		UserRole.CONSUMER
-	),
+	// jwtGuard,
+	// Roles(
+	// 	// UserRole.SUPPLIER,
+	// 	// UserRole.MANUFACTURER,
+	// 	// UserRole.DISTRIBUTOR,
+	// 	// UserRole.RETAILER,
+	// 	// UserRole.CONSUMER
+	// ),
 	ProductController.getProduct
 );
 

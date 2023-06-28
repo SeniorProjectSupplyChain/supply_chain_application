@@ -1,30 +1,56 @@
+import AppService from "../appService";
 import OrderService from "../services/orderService";
-import ImageService from "../services/imageService";
+import UserService from "../services/userService";
+import ProductCommercialService from "../services/productCommercialService";
 import { Request, Response } from "express";
 import { DecodeUser } from "../types/common";
-import { PRODUCTION_URL } from "../constants";
-import { submitTransactionOrderObj } from "../app";
-import { getUserObjByUserId } from "../services/userService";
 import {
 	OrderForCreate,
 	OrderForUpdateFinish,
-	OrderPayloadForCreate
+	OrderPayloadForCreate,
+	ProductCommercialItem
 } from "../types/models";
 
+const appService: AppService = new AppService();
+const userService: UserService = new UserService();
 const orderService: OrderService = new OrderService();
-const imageService: ImageService = new ImageService();
+const productCommercialService: ProductCommercialService =
+	new ProductCommercialService();
 
 const OrderController = {
+	getTransactionHistory: async (req: Request, res: Response) => {
+		try {
+			const user = req.user as DecodeUser;
+			const orderId = String(req.params.orderId);
+			const orders = await orderService.getTransactionHistory(
+				user.userId,
+				orderId
+			);
+
+			return res.status(200).json({
+				data: orders,
+				message: "successfully",
+				error: null
+			});
+		} catch (error) {
+			return res.status(400).json({
+				data: null,
+				message: "failed",
+				error: error.message
+			});
+		}
+	},
+
 	getAllOrders: async (req: Request, res: Response) => {
 		try {
 			const status = req.query.status;
 			const statusValue = Boolean(status) ? String(status) : "";
 
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
@@ -32,13 +58,13 @@ const OrderController = {
 			}
 
 			const orders = await orderService.getAllOrders(userObj, statusValue);
-			return res.json({
+			return res.status(200).json({
 				data: orders,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -49,32 +75,25 @@ const OrderController = {
 	getAllOrdersByAddress: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-			const longitude = String(req.query.longitude);
-			const latitude = String(req.query.latitude);
-			const shippingStatus = String(req.query.shippingStatus);
+			const userObj = await userService.getUserObjByUserId(user.userId);
+			const address = String(req.query.address);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const orders = await orderService.getAllOrdersByAddress(
-				userObj,
-				longitude,
-				latitude,
-				shippingStatus
-			);
-			return res.json({
+			const orders = await orderService.getAllOrdersByAddress(userObj, address);
+			return res.status(200).json({
 				data: orders,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -88,28 +107,28 @@ const OrderController = {
 			const statusValue = Boolean(status) ? String(status) : "";
 
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const orders = await orderService.GetAllOrdersOfManufacturer(
+			const orders = await orderService.getAllOrdersOfManufacturer(
 				userObj,
 				user.userId,
 				statusValue
 			);
-			return res.json({
+			return res.status(200).json({
 				data: orders,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -123,28 +142,28 @@ const OrderController = {
 			const statusValue = Boolean(status) ? String(status) : "";
 
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const orders = await orderService.GetAllOrdersOfDistributor(
+			const orders = await orderService.getAllOrdersOfDistributor(
 				userObj,
 				user.userId,
 				statusValue
 			);
-			return res.json({
+			return res.status(200).json({
 				data: orders,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -158,28 +177,28 @@ const OrderController = {
 			const statusValue = Boolean(status) ? String(status) : "";
 
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const orders = await orderService.GetAllOrdersOfRetailer(
+			const orders = await orderService.getAllOrdersOfRetailer(
 				userObj,
 				user.userId,
 				statusValue
 			);
-			return res.json({
+			return res.status(200).json({
 				data: orders,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -191,10 +210,10 @@ const OrderController = {
 		try {
 			const user = req.user as DecodeUser;
 			const orderId = String(req.params.orderId);
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
@@ -202,13 +221,13 @@ const OrderController = {
 			}
 
 			const order = await orderService.getDetailOrder(userObj, orderId);
-			return res.json({
+			return res.status(200).json({
 				data: order,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -220,9 +239,10 @@ const OrderController = {
 		try {
 			const user = req.user as DecodeUser;
 			const orderObj = req.body.orderObj as OrderPayloadForCreate;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
+
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
@@ -234,26 +254,23 @@ const OrderController = {
 					userObj,
 					orderObj
 				);
-
-			// QR Code for order
-			const orderId = await orderService.getNextCounterID(
-				userObj,
-				"OrderCounterNO"
-			);
-			const qrCodeString = await imageService.generateAndPublishQRCode(
-				`${PRODUCTION_URL}/order/${orderId}`,
-				`qrcode/orders/${orderId}.jpg`
-			);
-			order.qrCode = qrCodeString || "";
+			order.qrCode = await orderService.generateOrderQRCode(userObj);
 
 			const createdOrder = await orderService.createOrder(userObj, order);
-			return res.json({
+
+			// Backup
+			orderService.createOrderDB(createdOrder);
+			createdOrder.productItemList.map((productItem: ProductCommercialItem) =>
+				productCommercialService.createProductDB(productItem.product)
+			);
+
+			return res.status(200).json({
 				data: createdOrder,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				message: "failed",
 				data: null,
 				error: error.message
@@ -264,29 +281,39 @@ const OrderController = {
 	updateOrder: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 			const orderObj = req.body.orderObj as OrderForUpdateFinish;
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const order = await submitTransactionOrderObj(
+			const updatedOrder = await appService.submitTransactionOrderObj(
 				"UpdateOrder",
 				userObj,
 				orderObj
 			);
-			return res.json({
-				data: order,
+
+			// Backup
+			orderService.updateOrderDB(orderObj.orderId, updatedOrder);
+			updatedOrder.productItemList.map((productItem: ProductCommercialItem) =>
+				productCommercialService.updateProductDB(
+					productItem.product.productCommercialId,
+					productItem.product
+				)
+			);
+
+			return res.status(200).json({
+				data: updatedOrder,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -297,29 +324,41 @@ const OrderController = {
 	finishOrder: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 			const orderObj = req.body.orderObj as OrderForUpdateFinish;
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const order = await submitTransactionOrderObj(
+			const updatedOrder = await appService.submitTransactionOrderObj(
 				"FinishOrder",
 				userObj,
 				orderObj
 			);
-			return res.json({
-				data: order,
+
+			// Backup
+			orderService.updateOrderDB(orderObj.orderId, updatedOrder);
+			updatedOrder.productItemList.map((productItem: ProductCommercialItem) =>
+				productCommercialService.updateProductDB(
+					productItem.product.productCommercialId,
+					productItem.product
+				)
+			);
+
+			return res.status(200).json({
+				data: updatedOrder,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			return res.json({ data: null, message: "failed", error: error.message });
+			return res
+				.status(400)
+				.json({ data: null, message: "failed", error: error.message });
 		}
 	}
 };

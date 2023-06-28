@@ -1,22 +1,18 @@
+import AppService from "../appService";
 import ImageService from "../services/imageService";
+import UserService from "../services/userService";
+import ProductService from "../services/productService";
 import { Request, Response } from "express";
-import { DecodeUser } from "../types/common";
 import { PRODUCTION_URL } from "../constants";
-import { Product } from "../models/ProductModel";
+import { DecodeUser } from "../types/common";
+import { Product } from "../types/models";
 import { ProductForCultivate } from "../types/models";
-import { getUserObjByUserId } from "../services/userService";
-import { getProductById, getAllProducts } from "../services/productService";
-import {
-	evaluateTransaction,
-	submitTransaction,
-	submitTransactionCultivateProduct
-} from "../app";
 import { convertBufferToJavasciptObject } from "../helpers";
-import moment from 'moment'
-import { parse, format, addHours } from 'date-fns';
-import { log } from "console";
 
+const appService: AppService = new AppService();
 const imageService: ImageService = new ImageService();
+const userService: UserService = new UserService();
+const productService: ProductService = new ProductService();
 
 const ProductController = {
 	// getQuantityProduct: async (req: Request, res: Response) => {
@@ -46,24 +42,83 @@ const ProductController = {
 	// 	}
 	// },
 
+	getTransactionHistory: async (req: Request, res: Response) => {
+		try {
+			const user = req.user as DecodeUser;
+			const productId = String(req.params.productId);
+			const products = await productService.getTransactionHistory(
+				user.userId,
+				productId
+			);
+
+			return res.status(200).json({
+				data: products,
+				message: "successfully",
+				error: null
+			});
+		} catch (error) {
+			return res.status(400).json({
+				data: null,
+				message: "failed",
+				error: error.message
+			});
+		}
+	},
+
 	getAllProducts: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const products = await getAllProducts(user.userId);
+			const products = await productService.getAllProducts(user.userId);
 			const sortedProducts = products.sort(
 				(a: Product, b: Product) =>
 					parseInt(a.productId.slice(7)) - parseInt(b.productId.slice(7))
 			);
 
-			return res.json({
+			return res.status(200).json({
 				data: sortedProducts,
 				message: "successfully",
 				error: null
 			});
-		
 		} catch (error) {
-			console.log("getAllProducts", error.message);
+			return res.status(400).json({
+				data: null,
+				message: "failed",
+				error: error.message
+			});
+		}
+	},
+
+	getPaginationProduct: async (req: Request, res: Response) => {
+		try {
+			const user = req.user as DecodeUser;
+			const userObj = await getUserObjByUserId(user.userId);
+
+			const productsBuffer = await evaluateTransaction(
+				"GetAllProducts",
+				userObj,
+				null
+			);
+			const products = await convertBufferToJavasciptObject(productsBuffer);
+
+			console.log(products.length);
+
+			// Phân trang với mỗi trang hiển thị 5 sản phẩm
+			const page = parseInt(req.query.page as string) || 1; // Trang hiện tại (mặc định là trang 1)
+			const pageSize = 3; // Số lượng sản phẩm trên mỗi trang
+			const startIndex = (page - 1) * pageSize; // Vị trí bắt đầu của trang hiện tại
+			const endIndex = startIndex + pageSize; // Vị trí kết thúc của trang hiện tại
+			const paginatedProducts = products.slice(startIndex, endIndex);
+
 			return res.json({
+				data: {
+					data: paginatedProducts,
+					length: products.length
+				},
+				message: "successfully",
+				error: null
+			});
+		} catch (error) {
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -112,19 +167,16 @@ const ProductController = {
 
 	getProduct: async (req: Request, res: Response) => {
 		try {
-			const user = req.user as DecodeUser;
 			const productId = String(req.params.productId);
-			const userObj = await getUserObjByUserId(user.userId);
-			const product = await getProductById(userObj, productId);
+			const product = await productService.getProductByIdNoAuth(productId);
 
-			return res.json({
+			return res.status(200).json({
 				data: product,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			console.log("getProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -136,23 +188,25 @@ const ProductController = {
 		try {
 			const user = req.user as DecodeUser;
 			const productId = String(req.query.productId);
-			const userObj = await getUserObjByUserId(user.userId);
-			const productObj = await getProductById(userObj, productId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
+			const productObj = await productService.getProductById(
+				userObj,
+				productId
+			);
 
-			const transactions = await evaluateTransaction(
+			const transactions = await appService.evaluateTransaction(
 				"GetProductTransactionHistory",
 				userObj,
 				productObj
 			);
 
-			return res.json({
+			return res.status(200).json({
 				data: transactions,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			console.log("getTransactionsory", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -163,30 +217,32 @@ const ProductController = {
 	cultivateProduct: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 			const productObj = req.body.productObj as ProductForCultivate;
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const data = await submitTransactionCultivateProduct(
+			const data = await appService.submitTransactionCultivateProduct(
 				"CultivateProduct",
 				userObj,
 				productObj
 			);
-			return res.json({
+
+			productService.createProductDB(data);
+
+			return res.status(200).json({
 				data: data,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			console.log("cultivateProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -196,21 +252,24 @@ const ProductController = {
 
 	harvestProduct: async (req: Request, res: Response) => {
 		try {
-			const productId = String(req.body.productId);
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
+			const productId = String(req.body.productId);
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(userObj, productId);
+			const productObj = await productService.getProductById(
+				userObj,
+				productId
+			);
 			if (!productObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "Product not found!",
 					error: "product-notfound"
@@ -218,60 +277,28 @@ const ProductController = {
 			}
 
 			if (productObj.status.toLowerCase() != "cultivated") {
-				return res.json({
+				return res.status(400).json({
 					data: null,
 					message: "Product is not cultivated or was harvested",
 					error: "product-not-cultivated-or-was-harvested"
 				});
 			}
 
-			const data = await submitTransaction(
+			const data = await appService.submitTransaction(
 				"HarvestProduct",
 				userObj,
 				productObj
 			);
-			return res.json({
+
+			productService.updateProductDB(productId, data);
+
+			return res.status(200).json({
 				data: data,
 				message: "successfully",
 				status: "success"
 			});
 		} catch (error) {
-			console.log("harvestProduct", error.message);
-			return res.json({
-				data: null,
-				message: "failed",
-				error: error.message
-			});
-		}
-	},
-
-	updateProduct: async (req: Request, res: Response) => {
-		try {
-			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-			const productObj = req.body.productObj;
-
-			if (!userObj) {
-				return res.json({
-					data: null,
-					message: "User not found!",
-					error: "user-notfound"
-				});
-			}
-
-			const data = await submitTransaction(
-				"UpdateProduct",
-				userObj,
-				productObj
-			);
-			return res.json({
-				data: data,
-				message: "successfully",
-				error: null
-			});
-		} catch (error) {
-			console.log("updateProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -282,27 +309,30 @@ const ProductController = {
 	importProduct: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 			const { productId, price } = req.body;
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(userObj, productId);
+			const productObj = await productService.getProductById(
+				userObj,
+				productId
+			);
 			if (!productObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "Product not found!",
 					error: "product-notfound"
 				});
 			}
 			if (productObj.status.toLowerCase() != "harvested") {
-				return res.json({
+				return res.status(400).json({
 					data: null,
 					message: "Product is not harvested or was imported",
 					error: "product-is-not-harvested-or-was-imported"
@@ -310,19 +340,21 @@ const ProductController = {
 			}
 
 			productObj.price = price;
-			const data = await submitTransaction(
+			const data = await appService.submitTransaction(
 				"ImportProduct",
 				userObj,
 				productObj
 			);
-			return res.json({
+
+			productService.updateProductDB(productId, data);
+
+			return res.status(200).json({
 				data: data,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			console.log("importProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -333,27 +365,30 @@ const ProductController = {
 	manufactureProduct: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
+			const userObj = await userService.getUserObjByUserId(user.userId);
 			const { productId, imageUrl, expireTime } = req.body;
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(userObj, productId);
+			const productObj = await productService.getProductById(
+				userObj,
+				productId
+			);
 			if (!productObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "Product not found!",
 					error: "product-notfound"
 				});
 			}
 			if (productObj.status.toLowerCase() != "imported") {
-				return res.json({
+				return res.status(400).json({
 					data: null,
 					message: "Product is not imported or was manufactured",
 					error: "product-is-not-imported-or-was-manufactured"
@@ -368,19 +403,21 @@ const ProductController = {
 			productObj.expireTime = expireTime;
 			productObj.image = imageUrl;
 
-			const data = await submitTransaction(
+			const data = await appService.submitTransaction(
 				"ManufactureProduct",
 				userObj,
 				productObj
 			);
-			return res.json({
+
+			productService.updateProductDB(productId, data);
+
+			return res.status(200).json({
 				data: data,
 				message: "successfully",
 				status: "success"
 			});
 		} catch (error) {
-			console.log("manufactureProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -388,235 +425,44 @@ const ProductController = {
 		}
 	},
 
-	exportProduct: async (req: Request, res: Response) => {
+	updateProduct: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-			const { productId, price } = req.body;
+			const userObj = await userService.getUserObjByUserId(user.userId);
+			const productObj = req.body.productObj;
 
 			if (!userObj) {
-				return res.json({
+				return res.status(404).json({
 					data: null,
 					message: "User not found!",
 					error: "user-notfound"
 				});
 			}
 
-			const productObj = await getProductById(userObj, productId);
-			if (!productObj) {
-				return res.json({
-					data: null,
-					message: "Product not found!",
-					error: "product-notfound"
-				});
-			}
-			if (productObj.status.toLowerCase() != "manufactured") {
-				return res.json({
-					data: null,
-					message: "Product is not manufactured or was exported",
-					error: "product-is-not-manufactured-or-was-exported"
-				});
-			}
-
-			productObj.price = price;
-			const data = await submitTransaction(
-				"ExportProduct",
+			const product = await productService.handleProductForUpdate(
 				userObj,
 				productObj
 			);
-			return res.json({
-				data: data,
-				message: "successfully",
-				error: null
-			});
-		} catch (error) {
-			console.log("exportProduct", error.message);
-			return res.json({
-				data: null,
-				message: "failed",
-				error: error.message
-			});
-		}
-	},
-
-	distributeProduct: async (req: Request, res: Response) => {
-		try {
-			const productId = String(req.body.productId);
-			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-
-			if (!userObj) {
-				return res.json({
-					data: null,
-					message: "User not found!",
-					error: "user-notfound"
-				});
-			}
-
-			const productObj = await getProductById(userObj, productId);
-			if (!productObj) {
-				return res.json({
-					data: null,
-					message: "Product not found!",
-					error: "product-notfound"
-				});
-			}
-
-			if (productObj.status.toLowerCase() != "exported") {
-				return res.json({
-					data: null,
-					message: "Product is not exported or was distributed",
-					error: "product-is-not-exported-or-was-distributed"
-				});
-			}
-
-			const data = await submitTransaction(
-				"DistributeProduct",
+			const data = await appService.submitTransaction(
+				"UpdateProduct",
 				userObj,
-				productObj
+				product
 			);
-			return res.json({
+
+			productService.updateProductDB(productObj.productId, data);
+
+			return res.status(200).json({
 				data: data,
 				message: "successfully",
 				error: null
 			});
 		} catch (error) {
-			console.log("distributeProduct", error.message);
-			return res.json({
+			return res.status(400).json({
 				data: null,
 				message: "failed",
 				error: error.message
 			});
 		}
-	},
-
-	importRetailerProduct: async (req: Request, res: Response) => {
-		try {
-			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-			const { productId, price } = req.body;
-
-			if (!userObj) {
-				return res.json({
-					data: null,
-					message: "User not found!",
-					error: "user-notfound"
-				});
-			}
-
-			const productObj = await getProductById(userObj, productId);
-			if (!productObj) {
-				return res.json({
-					data: null,
-					message: "Product not found!",
-					error: "product-notfound"
-				});
-			}
-			if (productObj.status.toLowerCase() != "distributing") {
-				return res.json({
-					data: null,
-					message: "Product is not distributed or was selling",
-					error: "product-is-not-distributed-or-was-selling"
-				});
-			}
-
-			productObj.price = price;
-			const data = await submitTransaction(
-				"ImportRetailerProduct",
-				userObj,
-				productObj
-			);
-			return res.json({
-				data: data,
-				message: "successfully",
-				error: null
-			});
-		} catch (error) {
-			console.log("importRetailProduct", error.message);
-			return res.json({
-				data: null,
-				message: "failed",
-				error: error.message
-			});
-		}
-	},
-
-	sellProduct: async (req: Request, res: Response) => {
-		try {
-			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-			const { productId, price } = req.body;
-
-			if (!userObj) {
-				return res.json({
-					data: null,
-					message: "User not found!",
-					error: "user-notfound"
-				});
-			}
-
-			const productObj = await getProductById(userObj, productId);
-			if (!productObj) {
-				return res.json({
-					data: null,
-					message: "Product not found!",
-					error: "product-notfound"
-				});
-			}
-			if (productObj.status.toLowerCase() != "retailing") {
-				return res.json({
-					data: null,
-					message: "Product is not selling or was sold",
-					error: "product-is-not-selling-or-was-sold"
-				});
-			}
-
-			productObj.price = price;
-			const data = await submitTransaction("SellProduct", userObj, productObj);
-			return res.json({
-				data: data,
-				message: "successfully",
-				error: null
-			});
-		} catch (error) {
-			console.log("sellProduct", error.message);
-			return res.json({
-				data: null,
-				message: "failed",
-				error: error.message
-			});
-		}
-	},
-
-	addCertificate: async (req: Request, res: Response) => {
-		// try {
-		// 	const { userObj, productObj } = req.body;
-		// 	let product = await ProductController.getProduct(req, res)
-		// 	if (!product) {
-		// 		throw new Error("Content not found !!!");
-		// 	}
-		// 	const base64String = productObj.split("base64,")[1];
-		// 	const bytesImage = Buffer.from(base64String, "base64");
-		// 	const storage = new FirebaseStorage("supplychain.app.com");
-		// 	const stream = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(bytesImage); }, pull() { }, cancel() { } });
-		// 	product.CertificateUrl = await storage.child("Certificate").put(stream);
-		// 	const result = await submitTransaction(
-		// 		"AddCertificate",
-		// 		userObj,
-		// 		product
-		// 	);
-		// 	return res.json({
-		// 		data: result,
-		// 		message: "successfully",
-		// 		error: null
-		// 	})
-		// } catch (error) {
-		// 	return res.json({
-		// 		data: null,
-		// 		message: "failed",
-		// 		error: error.message
-		// 	});
-		// }
 	}
 };
 

@@ -1,6 +1,6 @@
 ### get all product
-GET https://878b9e33e010.ngrok.app/product/all
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiI1ZDEzMWE5OC00NjQ5LTRlODYtOGJjZS1kZTMyNTU0NGI1YWIiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIiwicGhvbmVOdW1iZXIiOiIrODQ4ODY3NTU3NzIiLCJpYXQiOjE2ODYxOTEwNDAsImV4cCI6MTY4NjI3NzQ0MH0.7IuGXhjp4ltLAxwE1FT4KaYJJ7ZVVU1Ge409bdjnXRQ
+GET https://0ddeed6f66b9.ngrok.app/product/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiI2MTY5YzM2Ny04MTRlLTRhZjYtOGExMy0yYTBmZDlkYTE5MWYiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIE9yZ3MiLCJwaG9uZU51bWJlciI6Iis4NDg4Njc1NTc3MiIsImlhdCI6MTY4NjUzODY1MCwiZXhwIjoxNjg2NjI1MDUwfQ.llVYD_N_Q_N7GHroXJ1KidMNTeLWjpVscuu8WH3O6JE
 
 ### get pagination product
 GET https://878b9e33e010.ngrok.app/product/pagination?page=1
@@ -9,43 +9,71 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZ
 
 
 ### cultivated
-POST http://localhost:4000/product/cultivate
+POST https://bf65e7c30fcf.ngrok.app/product/cultivate
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiI1ZDEzMWE5OC00NjQ5LTRlODYtOGJjZS1kZTMyNTU0NGI1YWIiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIiwicGhvbmVOdW1iZXIiOiIrODQ4ODY3NTU3NzIiLCJpYXQiOjE2ODYzMDI5MDAsImV4cCI6MTY4NjM4OTMwMH0.hjdOFNpUn0sYziELK9rFwFeR86vIBASRTgedx34rOmw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiIxODVlY2EyOC05NTc3LTRkMGYtYTEyYy1lMjEzNGUzMzhlMGMiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIE9yZ3MgTm8uIDIiLCJwaG9uZU51bWJlciI6Iis4NDk5MTIzNDU2NyIsImlhdCI6MTY4NjYyNTEzOSwiZXhwIjoxNjg2NzExNTM5fQ.eWpO7OklfiksRsQ82fzPf8wW2RPcj4qoGQoGR_4z2Ww
 
 {
   "productObj": {
-    "productId": "Product3",
+    "productName": "Tinh bột nghệ xã Tân Thịnh",
     "image": [
-      "https://ocopvietnam.com.vn/upload/images/dua-hau-ham-ninh-quang-binh-ngot-ngao-nhu-tam-long-nguoi-mien-trung-5-1652858679.jpg",
-      "https://ocopvietnam.com.vn/upload/images/duahauhamninh5.jpg",
-      "https://baoquangbinh.vn/dataimages/202305/original/images1539032652_1__17__copy.jpg"
+      "http://tanthinh.thanhphoyenbai.yenbai.gov.vn/wp-content/uploads/2022/12/z3961486741370_5b9219b01602862e937fa3d116a2921d-768x711.jpg"
     ],
-    "productName": "Dưa hấu Hàm Ninh",
-    "dates": {
-      "cultivated": "",
-      "harvested": "",
-      "imported": "",
-      "manufacturered": "",
-      "exported": "",
-      "distributed": "",
-      "selling": "",
-      "sold": ""
-    },
-    "actors": {
-      "supplierId": "",
-      "manufacturerId": "",
-      "distributorId": "",
-      "retailerId": ""
-    },
-    "expireTime": "",
-    "price": "100000",
-    "amount": "10",
+    "price": "56000",
+    "amount": "2",
     "unit": "kg",
-    "status": "",
-    "description": "Dưa hấu Hàm Ninh, Quảng Bình ngọt ngào như tấm lòng người miền Trung",
-    "certificateUrl": "https://baoquangbinh.vn/dataimages/202305/original/images1538078385_5_copy.jpg",
-    "supplierId": "4c5bf63e-4be2-4b40-9ceb-ebd87ff1c59a",
-    "qrCode": ""
+    "description": "Tinh bột nghệ là phần cốt yếu của củ nghệ tươi, sau khi loại bỏ hết chất xơ, dầu, nhựa nghệ, tạp chất chỉ để lại tinh bột và Curcumin. Tinh bột nghệ chứa nhiều chất dinh dưỡng như protein, chất xơ, niacin, giàu vitamin như vitamin E, C, K, giàu khoáng chất như kali, canxi, sắt,…\nĐặc biệt, tinh bột nghệ rất giàu Curcumin, một chất quý giá chỉ có ở củ nghệ được sử dụng trong y học để điều trị viêm nhiễm, bệnh ngoài da, vết thương, bệnh tiêu hóa, các bệnh về gan, ngăn chặn sự hình thành và phát triển của các tế bào ung thư từ đó giúp phòng ngừa ung thư hiệu quả. Điều tuyệt vời của tinh bột nghệ đối với sức khoẻ đó là nhờ vào tinh chất kháng khuẩn, kháng vi trùng và các loại nấm có hại cho cơ thể. Từ đó, chúng giúp cơ thể tăng hệ miễn dịch hiệu quả một cách tự nhiên và lành mạnh. \nTừ những đặc tính ưu việt trên, tinh bột nghệ hiện đang là một trong những loại thực phẩm được ưa chuộng nhất hiện nay. Có rất nhiều cách để sử dụng tinh bột nghệ trong cuộc sống hàng ngày như dùng trực tiếp, pha chế sinh tố, trà hay kết hợp với các món ăn.\nVới mục đích nâng cao chất lượng phục vụ người tiêu dùng, những năm qua HTX dịch vụ tổng hợp nông nghiệp Tân Thịnh đã từng bước xây dựng vùng trồng nguyên liệu tập trung và đầu tư chế biến tinh bột nghệ. HTX luôn đặt vấn đề an toàn thực phẩm và chất lượng sản phẩm lên hàng đầu, các sản phẩm làm ra đều được sản xuất theo quy trình sạch, an toàn, bên cạnh đó HTX còn chủ động liên kết, hợp tác với các doanh nghiệp, HTX, các cửa hàng … đưa sản phẩm tinh bột nghệ có chất lượng ra thị trường.",
+    "certificateUrl": "http://tanthinh.thanhphoyenbai.yenbai.gov.vn/wp-content/uploads/2022/12/z3961492810881_8da3e11f1228571148295de853779c6c-1568x2091.jpg"
   }
 }
+
+
+
+
+### cultivated
+POST https://2356220b1567.ngrok.app/product/harvest
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwcGxpZXIiLCJ1c2VySWQiOiJlMGMzMjYwMi0zNTE0LTQ0ZDMtOGUzMC1hN2I3MzVjZWMzNmEiLCJ1c2VyTmFtZSI6IlN1cHBsaWVyIE9yZ3MiLCJwaG9uZU51bWJlciI6Iis4NDg4Njc1NTc3MiIsImlhdCI6MTY4NjM5MDAzMywiZXhwIjoxNjg2NDc2NDMzfQ.zGi7kCgJ3VStEVJMjGIJTo8nU3AjrLkJFRVyxkS5x1o
+
+{
+  "productId": "Product6"
+}
+
+
+###
+#{
+#  "productObj": {
+#    "productId": "Product3",
+#    "image": [
+#      "https://ocopvietnam.com.vn/upload/images/dua-hau-ham-ninh-quang-binh-ngot-ngao-nhu-tam-long-nguoi-mien-trung-5-1652858679.jpg",
+#      "https://ocopvietnam.com.vn/upload/images/duahauhamninh5.jpg",
+#      "https://baoquangbinh.vn/dataimages/202305/original/images1539032652_1__17__copy.jpg"
+#    ],
+#    "productName": "Dưa hấu Hàm Ninh",
+#    "dates": {
+#      "cultivated": "",
+#      "harvested": "",
+#      "imported": "",
+#      "manufacturered": "",
+#      "exported": "",
+#      "distributed": "",
+#      "selling": "",
+#      "sold": ""
+#    },
+#    "actors": {
+#      "supplierId": "",
+#      "manufacturerId": "",
+#      "distributorId": "",
+#      "retailerId": ""
+#    },
+#    "expireTime": "",
+#    "price": "100000",
+#    "amount": "10",
+#    "unit": "kg",
+#    "status": "",
+#    "description": "Dưa hấu Hàm Ninh, Quảng Bình ngọt ngào như tấm lòng người miền Trung",
+#    "certificateUrl": "https://baoquangbinh.vn/dataimages/202305/original/images1538078385_5_copy.jpg",
+#    "supplierId": "4c5bf63e-4be2-4b40-9ceb-ebd87ff1c59a",
+#    "qrCode": ""
+#  }
+#}
