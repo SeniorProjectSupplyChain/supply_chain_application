@@ -4,10 +4,8 @@ import UserService from "../services/userService";
 import ProductService from "../services/productService";
 import { Request, Response } from "express";
 import { PRODUCTION_URL } from "../constants";
-import { DecodeUser } from "../types/common";
-import { Product } from "../types/models";
-import { ProductForCultivate } from "../types/models";
-import { convertBufferToJavasciptObject } from "../helpers";
+import { generateProductCode } from "../helpers";
+import { DecodeUser, Product, ProductForCultivate } from "../types/models";
 
 const appService: AppService = new AppService();
 const imageService: ImageService = new ImageService();
@@ -15,33 +13,6 @@ const userService: UserService = new UserService();
 const productService: ProductService = new ProductService();
 
 const ProductController = {
-	// getQuantityProduct: async (req: Request, res: Response) => {
-	// 	try {
-	// 		const user = req.user as DecodeUser;
-	// 		const userObj = await getUserObjByUserId(user.userId);
-	//
-	// 		const productsBuffer = await evaluateTransaction(
-	// 			"GetAllProducts",
-	// 			userObj,
-	// 			null
-	// 		);
-	// 		const products = await convertBufferToJavasciptObject(productsBuffer);
-	//
-	// 		return res.json({
-	// 			data: products,
-	// 			message: "successfully",
-	// 			error: null
-	// 		});
-	// 	} catch (error) {
-	// 		console.log("getAllProducts", error.message);
-	// 		return res.json({
-	// 			data: null,
-	// 			message: "failed",
-	// 			error: error.message
-	// 		});
-	// 	}
-	// },
-
 	getTransactionHistory: async (req: Request, res: Response) => {
 		try {
 			const user = req.user as DecodeUser;
@@ -81,83 +52,6 @@ const ProductController = {
 			});
 		} catch (error) {
 			return res.status(400).json({
-				data: null,
-				message: "failed",
-				error: error.message
-			});
-		}
-	},
-
-	getPaginationProduct: async (req: Request, res: Response) => {
-		try {
-			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-
-			const productsBuffer = await evaluateTransaction(
-				"GetAllProducts",
-				userObj,
-				null
-			);
-			const products = await convertBufferToJavasciptObject(productsBuffer);
-
-			console.log(products.length);
-
-			// Phân trang với mỗi trang hiển thị 5 sản phẩm
-			const page = parseInt(req.query.page as string) || 1; // Trang hiện tại (mặc định là trang 1)
-			const pageSize = 3; // Số lượng sản phẩm trên mỗi trang
-			const startIndex = (page - 1) * pageSize; // Vị trí bắt đầu của trang hiện tại
-			const endIndex = startIndex + pageSize; // Vị trí kết thúc của trang hiện tại
-			const paginatedProducts = products.slice(startIndex, endIndex);
-
-			return res.json({
-				data: {
-					data: paginatedProducts,
-					length: products.length
-				},
-				message: "successfully",
-				error: null
-			});
-		} catch (error) {
-			return res.status(400).json({
-				data: null,
-				message: "failed",
-				error: error.message
-			});
-		}
-	},
-
-	getPaginationProduct: async (req: Request, res: Response) => {
-		try {
-			const user = req.user as DecodeUser;
-			const userObj = await getUserObjByUserId(user.userId);
-
-			const productsBuffer = await evaluateTransaction(
-				"GetAllProducts",
-				userObj,
-				null
-			);
-			const products = await convertBufferToJavasciptObject(productsBuffer);
-
-			console.log(products.length);
-
-			// Phân trang với mỗi trang hiển thị 5 sản phẩm
-			const page = parseInt(req.query.page as string) || 1; // Trang hiện tại (mặc định là trang 1)
-			const pageSize = 3; // Số lượng sản phẩm trên mỗi trang
-			const startIndex = (page - 1) * pageSize; // Vị trí bắt đầu của trang hiện tại
-			const endIndex = startIndex + pageSize; // Vị trí kết thúc của trang hiện tại
-			const paginatedProducts = products.slice(startIndex, endIndex);
-
-			return res.json({
-				data: {
-					data: paginatedProducts,
-					length: products.length
-				},
-				message: "successfully",
-				error: null
-			});
-		} catch (error) {
-			console.log("getAllProducts", error.message);
-			return res.json({
 				data: null,
 				message: "failed",
 				error: error.message
@@ -219,6 +113,10 @@ const ProductController = {
 			const user = req.user as DecodeUser;
 			const userObj = await userService.getUserObjByUserId(user.userId);
 			const productObj = req.body.productObj as ProductForCultivate;
+			productObj.productCode = generateProductCode(
+				productObj.productName,
+				userObj.userCode
+			);
 
 			if (!userObj) {
 				return res.status(404).json({

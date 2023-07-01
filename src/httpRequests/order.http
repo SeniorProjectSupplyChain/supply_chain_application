@@ -1,16 +1,10 @@
 ### GET ALL ORDER
-GET https://2356220b1567.ngrok.app/order/all?status=PENDING
+GET https://f20f59bc6393.ngrok.app/order/all?userId=9e3c5b83-cff9-4c97-98b2-01209553431c
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoicmV0YWlsZXIiLCJ1c2VySWQiOiI0YmY2MGYzMi1hMDdjLTRlNDktYmRmZS1jYTgxMTM3MDlmOTkiLCJ1c2VyTmFtZSI6IlJldGFpbGVyIE9yZ3MgTm8uMSIsInBob25lTnVtYmVyIjoiKzg0ODg2NzU1NzcwIiwiaWF0IjoxNjg2NDk4NTcyLCJleHAiOjE2ODY1ODQ5NzJ9.mWLVx3LCEI50rXsCb3qgrDSDBYA-4tS96ZIeJgg-fJ0
-### GET  ORDER
-GET https://2356220b1567.ngrok.app/order/Order1
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoicmV0YWlsZXIiLCJ1c2VySWQiOiI0YmY2MGYzMi1hMDdjLTRlNDktYmRmZS1jYTgxMTM3MDlmOTkiLCJ1c2VyTmFtZSI6IlJldGFpbGVyIE9yZ3MgTm8uMSIsInBob25lTnVtYmVyIjoiKzg0ODg2NzU1NzcwIiwiaWF0IjoxNjg2NDk4NTcyLCJleHAiOjE2ODY1ODQ5NzJ9.mWLVx3LCEI50rXsCb3qgrDSDBYA-4tS96ZIeJgg-fJ0
 
 ### CREATE ORDER
 POST https://f20f59bc6393.ngrok.app/order/create
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoibWFudWZhY3R1cmVyIiwidXNlcklkIjoiOWUzYzViODMtY2ZmOS00Yzk3LTk4YjItMDEyMDk1NTM0MzFjIiwidXNlck5hbWUiOiJNYW51ZmFjdHVyZXIiLCJwaG9uZU51bWJlciI6Iis4NDg4Njc1NTc3MyIsImlhdCI6MTY4NjA0Mzk4MywiZXhwIjoxNjg2MTMwMzgzfQ.syKzJsBxFLHORtlXW9E1d4fc_y1ho2ZuVol3NxI_2bc
 
 {
   "userId": "9e3c5b83-cff9-4c97-98b2-01209553431c",
@@ -70,7 +64,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoibWFudWZhY
       "retailerSignature": "signature2"
     },
     "status": "PENDING",
-    "manufacturerId": "aa8708f8-89f7-4031-b257-0acc72e3d04",
     "distributorId": "0ef0ce7c-edcb-40ef-90d5-fb563ddd34fd",
     "retailerId": "3206c2cb-ab7d-45b5-98fa-c35313754e6d",
     "qrCode": "",
