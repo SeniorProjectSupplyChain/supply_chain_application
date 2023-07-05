@@ -361,7 +361,76 @@ const ProductController = {
 				error: error.message
 			});
 		}
+	},
+
+	addProductFromDatabase: async  (req: Request, res: Response) => {
+		try {
+			console.log("MONGO");
+			try {
+				const firstData = await productService.getProductByIdNoAuth("Product1")
+				if (firstData) {
+					return res.status(400).json({
+						data: null,
+						message: "It doesn't need to use back up data!"
+					});
+				}
+			} catch (e) {
+				console.log("pass")
+			}
+			const userBackUp: any = {
+				"role": "supplier",
+				"fullName": "Supplier Orgs No.99",
+				"password": "supplier",
+				"phoneNumber": "+84000000000",
+				"email": "Supplier99@gmail.com",
+				"address": "111 Dien Bien Phu, p Truong An, tp Hue",
+				"avatar": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRezjywllNJYGzGT_nqOrrsU_aW0JNm4GthHA&usqp=CAU",
+				"signature": "https://firebasestorage.googleapis.com/v0/b/supply-chain-9ea64.appspot.com/o/signatureimg%2Fsignature-supplier.png?alt=media&token=36c189fb-057b-4ceb-8ce6-6c4951187ba2&_gl=1*1rrrmm2*_ga*MTM3MTA5MTU2LjE2ODUwOTY5NjU.*_ga_CW55HF8NVT*MTY4NjM4NzQ5My4yLjEuMTY4NjM4NzUzMi4wLjAuMA.."
+			}
+			if (await userService.checkExistedUserEmail("Supplier99@gmail.com") || await userService.checkExistedUserPhoneNumber("+84000000000")) {
+				if (await userService.checkExistedUserEmail("Supplier99@gmail.com")) {
+					await userService.deleteUser({ email: "Supplier99@gmail.com" });
+				}
+				if (await userService.checkExistedUserPhoneNumber("+84000000000")) {
+					await userService.deleteUser({ phoneNumber: "+84000000000" });
+				}
+			}
+			const createdUser = await appService.registerUser(userBackUp)
+			const listProductDB = await productService.getAllProductsFromMongo();
+			let datas = []
+			for (let product of listProductDB) {
+				let inputProduct: ProductForCultivate = {
+					productName: product.productName,
+					productCode: product.productCode,
+					price: product.price,
+					amount: product.amount,
+					unit: product.unit,
+					description: product.description,
+					certificateUrl: product.certificateUrl,
+					image: product.image,
+				}
+				const data = await appService.submitTransactionCultivateProduct(
+					"CultivateProduct",
+					createdUser.data,
+					inputProduct
+				);
+				datas.push(data)
+			}
+			return res.status(200).json({
+				user:createdUser,
+				data: datas,
+				message: "successfully",
+				error: null
+			});
+		} catch (error) {
+			return res.status(400).json({
+				data: null,
+				message: "failed",
+				error: error.message
+			});
+		}
 	}
+
 };
 
 export default ProductController;

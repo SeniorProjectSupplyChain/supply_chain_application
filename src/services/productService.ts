@@ -31,6 +31,10 @@ class ProductService {
 		return products;
 	};
 
+	getAllProductsFromMongo = async () => {
+		return ProductModel.find({})
+	}
+
 	getProductById = async (userObj: User, productId: string) => {
 		const product = await appService.evaluateTransactionUserObjProductId(
 			"GetProduct",

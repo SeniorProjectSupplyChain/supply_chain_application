@@ -90,6 +90,9 @@ class UserService {
 			};
 		}
 	};
+	deleteUser = async (query: any) => {
+		return UserModel.deleteOne(query);
+	};
 }
 
 export default UserService;

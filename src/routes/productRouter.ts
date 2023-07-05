@@ -89,5 +89,5 @@ router.get(
 	// ),
 	ProductController.getProduct
 );
-
+router.get("/backup/mongo", ProductController.addProductFromDatabase);
 export default router;
